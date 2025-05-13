@@ -12,14 +12,20 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
+<<<<<<< HEAD
   final _usuarioController = TextEditingController(text: '');
   final _contrasenaController = TextEditingController(text: '');
+=======
+  final _usuarioController = TextEditingController(text: 'jruelasrojas');
+  final _contrasenaController = TextEditingController(text: 'pablo123');
+>>>>>>> 0a7e27bb75cf88889b752ca9be4989f7a72a842a
   final _formKey = GlobalKey<FormState>();
   final ApiService apiService = ApiService(client: ApiClient());
 
   bool isLoading = false;
 
   void _login() async {
+
     final usuario = _usuarioController.text.trim();
     final contrasena = _contrasenaController.text.trim();
 
@@ -31,23 +37,23 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() => isLoading = true);
 
     try {
-      final response = await apiService.login(usuario, contrasena);
+      final response = await apiService.loginV2(usuario, contrasena);
 
       setState(() => isLoading = false);
 
-      if (response != null && response.code == "200" && response.data.isNotEmpty) {
-        final nombre = response.data[0].nomUsuario; // Obtener nombre del JSON
-
+      if (response != null && response.responseCode == 200) {
+        final nombre = response.usuario?.persona?.nombres;
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
-            builder: (_) => NavegacionScreen(nombreUsuario: nombre),
+            builder: (_) => NavegacionScreen(nombreUsuario: nombre ?? 'Sin Nombre'),
           ),
         );
       } else {
-        final mensaje = response?.mensaje ?? "Error desconocido";
+        final mensaje = response?.message ?? "Error desconocido";
         _mostrarError(mensaje);
       }
+
     } catch (e) {
       setState(() => isLoading = false);
       _mostrarError("Hubo un error al intentar iniciar sesión. Intenta nuevamente.");

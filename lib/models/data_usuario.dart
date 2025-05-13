@@ -1,26 +1,22 @@
 import 'package:json_annotation/json_annotation.dart';
 
-part 'data_usuario.g.dart';  // Este archivo será generado automáticamente por build_runner
+part 'data_usuario.g.dart';
 
 @JsonSerializable()
 class DataUsuario {
-  @JsonKey(name: 'id_usuario')
-  final String idUsuario;
+  @JsonKey(name: 'usuario_id')
+  final int usuarioId;
 
-  @JsonKey(name: 'nom_usuario')
-  final String nomUsuario;
+  @JsonKey(name: 'usuario_nombre')
+  final String usuarioNombre;
 
-  @JsonKey(name: 'estado_usuario')
-  final String? estadoUsuario;  // Permitir valores null
-
-  @JsonKey(name: 'contrasena')
-  final String contrasena;
+  @JsonKey(name: 'usuario_tipo')
+  final String? usuarioTipo;  // Puede ser null
 
   DataUsuario({
-    required this.idUsuario,
-    required this.nomUsuario,
-    this.estadoUsuario,  // Ya no es obligatorio
-    required this.contrasena,
+    required this.usuarioId,
+    required this.usuarioNombre,
+    this.usuarioTipo,  // Puede ser null
   });
 
   factory DataUsuario.fromJson(Map<String, dynamic> json) => _$DataUsuarioFromJson(json);

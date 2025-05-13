@@ -8,15 +8,15 @@ part of 'data_libro.dart';
 
 DataLibro _$DataLibroFromJson(Map<String, dynamic> json) => DataLibro(
   isbn: json['isbn'] as String,
-  portada: json['portada'] as String?,  // Cambiado a String? para permitir null
-  nomLibro: json['nom_libro'] as String?,  // Cambiado a String? para permitir null
-  nomAutor: json['autor'] as String?,  // Cambiado a String? para permitir null
-  descripcion: json['descripcion'] as String?,  // Cambiado a String? para permitir null
-  nomEditorial: json['editorial'] as String?,  // Cambiado a String? para permitir null
-  anioPublicacion: json['anio_publicacion'] as String?,  // Cambiado a String? para permitir null
-  edicion: json['edicion'] as String?,  // Cambiado a String? para permitir null
+  portada: json['portada'] as String?,
+  nomLibro: json['nom_libro'] as String?,
+  nomAutor: json['autor'] as String?,
+  descripcion: json['descripcion'] as String?,
+  nomEditorial: json['editorial'] as String?,
+  anioPublicacion: json['anio_publicacion'] as String?,
+  edicion: json['edicion'] as String?,
   existencias: (json['existencias'] as num).toInt(),
-  nomCategoria: json['categoria'] as String?,  // Cambiado a String? para permitir null
+  nomCategoria: json['categoria'] as String?,
 );
 
 Map<String, dynamic> _$DataLibroToJson(DataLibro instance) => <String, dynamic>{

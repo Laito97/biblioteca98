@@ -1,3 +1,6 @@
+import 'package:biblioteca97/models/auth_response.dart';
+import 'package:biblioteca97/models/usuario_response.dart';
+
 import '../models/data_categoria.dart';
 import '../models/data_editorial.dart';
 import '../models/data_libro.dart';
@@ -12,6 +15,52 @@ class ApiService {
   final ApiClient client;
 
   ApiService({required this.client});
+
+  //SERVICES V2
+
+    // LOGIN V2
+  Future<AuthResponse?> loginV2(String usuario, String contrasena) async {
+    try {
+      final response = await client.post('/auth/login', {
+        'username': usuario,
+        'password': contrasena,
+      });
+
+      if (response != null && response is Map<String, dynamic> && response.isNotEmpty) {
+        if (response.containsKey('access_token')) {
+          return AuthResponse.fromJson(response);
+        } else {
+          print("La respuesta del servidor no contiene un 'access_token'.");
+          return null;
+        }
+      } else {
+        print("Respuesta de login vacía o mal formada.");
+        return null;
+      }
+    } catch (e) {
+      print("Error en login: $e");
+      rethrow; 
+    }
+  }
+
+  Future<List<DataUsuario>> listUserV2() async {
+    try {
+      final data = await client.get('/usuarios/list');
+      if (data != null && data['usuarios'] != null && data['usuarios'] is List) {
+        final response = UsuariosResponse.fromJson(data);
+        return response.usuarios;
+      } else {
+        return [];
+      }
+    } catch (e) {
+      print("Error al obtener los usuarios: $e");
+      rethrow;
+    }
+  }
+
+
+
+
 
   // ===================== LOGIN =====================
   Future<AdminUsuarioResponse?> login(String usuario, String contrasena) async {

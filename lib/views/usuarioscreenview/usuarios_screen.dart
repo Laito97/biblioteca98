@@ -1,3 +1,5 @@
+import 'dart:ffi';
+
 import 'package:flutter/material.dart';
 import '../../models/data_usuario.dart';
 import '../../services/api_client.dart';
@@ -30,75 +32,12 @@ class _UsuariosScreenState extends State<UsuariosScreen> {
 
   Future<void> _fetchUsers() async {
     try {
-      listaUsuarios = await _apiService.fetchUsers();
+      listaUsuarios = await _apiService.listUserV2();
       usuariosFiltrados = List.from(listaUsuarios);
       setState(() {});
     } catch (e) {
       print("Error al obtener usuarios: $e");
     }
-  }
-
-  void _filtrarUsuarios(String query) {
-    final filtrados = listaUsuarios.where((usuario) {
-      final nombre = usuario.nomUsuario.toLowerCase();
-      final texto = query.toLowerCase();
-      return nombre.contains(texto);
-    }).toList();
-
-    setState(() {
-      usuariosFiltrados = filtrados;
-    });
-  }
-
-  void editarUsuario(DataUsuario usuario) {
-    setState(() {
-      isEditing = true;
-      usuarioEditando = usuario;
-      idController.text = usuario.idUsuario;
-      nomController.text = usuario.nomUsuario;
-      contrasenaController.text = usuario.contrasena;
-    });
-    _showAddUpdateDialog();
-  }
-
-  void eliminarUsuario(DataUsuario usuario) async {
-    print('Eliminando usuario: ${usuario.nomUsuario}');
-    try {
-      bool result = await _apiService.deleteUser(usuario.idUsuario);
-      if (result) {
-        _fetchUsers();
-      } else {
-        print("Error al eliminar usuario.");
-      }
-    } catch (e) {
-      print("Error al eliminar usuario: $e");
-    }
-  }
-
-  void _showAddUpdateDialog() {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: Text(isEditing ? 'Editar Usuario' : 'Agregar Usuario'),
-          content: _buildForm(),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: Text('Cancelar'),
-            ),
-            TextButton(
-              onPressed: () {
-                isEditing ? _updateUser() : _addUser();
-              },
-              child: Text(isEditing ? 'Actualizar' : 'Agregar'),
-            ),
-          ],
-        );
-      },
-    );
   }
 
   Widget _buildForm() {
@@ -123,42 +62,7 @@ class _UsuariosScreenState extends State<UsuariosScreen> {
     );
   }
 
-  Future<void> _addUser() async {
-    final usuario = DataUsuario(
-      idUsuario: DateTime.now().millisecondsSinceEpoch.toString(),
-      nomUsuario: nomController.text,
-      estadoUsuario: null,
-      contrasena: contrasenaController.text,
-    );
-
-    try {
-      await _apiService.addUser(usuario);
-      searchController.clear(); // limpiar búsqueda
-      _fetchUsers();
-      Navigator.of(context).pop();
-    } catch (e) {
-      print("Error al agregar usuario: $e");
-    }
-  }
-
-  Future<void> _updateUser() async {
-    final usuario = DataUsuario(
-      idUsuario: idController.text,
-      nomUsuario: nomController.text,
-      estadoUsuario: usuarioEditando.estadoUsuario,
-      contrasena: contrasenaController.text,
-    );
-
-    try {
-      await _apiService.updateUser(usuario);
-      searchController.clear(); // limpiar búsqueda
-      _fetchUsers();
-      Navigator.of(context).pop();
-    } catch (e) {
-      print("Error al actualizar usuario: $e");
-    }
-  }
-
+  
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -174,7 +78,7 @@ class _UsuariosScreenState extends State<UsuariosScreen> {
                 nomController.clear();
                 contrasenaController.clear();
               });
-              _showAddUpdateDialog();
+             // _showAddUpdateDialog();
             },
           ),
         ],
@@ -190,7 +94,7 @@ class _UsuariosScreenState extends State<UsuariosScreen> {
                 prefixIcon: Icon(Icons.search),
                 border: OutlineInputBorder(),
               ),
-              onChanged: _filtrarUsuarios,
+              //onChanged: _filtrarUsuarios,
             ),
           ),
           Expanded(
@@ -202,8 +106,8 @@ class _UsuariosScreenState extends State<UsuariosScreen> {
                 final usuario = usuariosFiltrados[index];
                 return MenuItemWidget(
                   usuario: usuario,
-                  onEdit: editarUsuario,
-                  onDelete: eliminarUsuario,
+                 // onEdit: editarUsuario,
+                 // onDelete: eliminarUsuario,
                 );
               },
             ),
