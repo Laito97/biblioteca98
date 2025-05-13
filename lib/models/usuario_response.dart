@@ -1,22 +1,25 @@
 import 'package:json_annotation/json_annotation.dart';
-import 'data_usuario.dart';  // Asegúrate de tener el archivo 'data_usuario.dart' importado
+import 'data_usuario.dart';
 
-part 'usuario_response.g.dart';  // Este archivo será generado automáticamente por build_runner
+part 'usuario_response.g.dart';
 
 @JsonSerializable()
-class UsuarioResponse {
-  final String code;
-  final String mensaje;
-  final List<DataUsuario> data;
+class UsuariosResponse {
+  final String message;
 
-  UsuarioResponse({
-    required this.code,
-    required this.mensaje,
-    required this.data,
+  @JsonKey(name: 'response_code')
+  final int responseCode;
+
+  final List<DataUsuario> usuarios;
+
+  UsuariosResponse({
+    required this.message,
+    required this.responseCode,
+    required this.usuarios,
   });
 
-  // Generados automáticamente por build_runner
-  factory UsuarioResponse.fromJson(Map<String, dynamic> json) =>
-      _$UsuarioResponseFromJson(json);
-  Map<String, dynamic> toJson() => _$UsuarioResponseToJson(this);
+  factory UsuariosResponse.fromJson(Map<String, dynamic> json) =>
+      _$UsuariosResponseFromJson(json);
+
+  Map<String, dynamic> toJson() => _$UsuariosResponseToJson(this);
 }

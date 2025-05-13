@@ -11,13 +11,14 @@ class AdminUsuarioResponse {
 
   factory AdminUsuarioResponse.fromJson(Map<String, dynamic> json) {
     return AdminUsuarioResponse(
-      code: json['code'],
-      mensaje: json['mensaje'],
-      data: (json['data'] as List)
+      code: json['response_code'],
+      mensaje: json['message'],
+      data: (json['access_token'] as List)
           .map((item) => DataAdminUsuario.fromJson(item))
           .toList(),
     );
   }
+
 }
 
 class DataAdminUsuario {

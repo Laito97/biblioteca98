@@ -3,11 +3,14 @@ import 'dart:convert';
 
 // ApiClient centralizado que realiza las peticiones
 class ApiClient {
-  final String baseUrl = 'http://192.168.18.38:3000';  // Base de la API
+  // final String baseUrl = 'http://192.168.18.38:300';  // Base de la API
+
+  final String host = 'http://192.168.18.38:3000/api/biblioteca_v1';
 
   // Petición GET genérica
   Future<Map<String, dynamic>> get(String endpoint) async {
-    final response = await http.get(Uri.parse('$baseUrl$endpoint'));
+    final response = await http.get(Uri.parse('$host$endpoint'));
+
     if (response.statusCode == 200) {
       return json.decode(response.body);  // Retorna la respuesta en formato JSON
     } else {
@@ -15,17 +18,22 @@ class ApiClient {
     }
   }
 
-  // Petición POST genérica
   Future<Map<String, dynamic>> post(String endpoint, Map<String, dynamic> body) async {
     final response = await http.post(
-      Uri.parse('$baseUrl$endpoint'),
+      Uri.parse('$host$endpoint'),
       headers: {'Content-Type': 'application/json'},
       body: json.encode(body),
     );
+    
+    print('STATUS CODE: ${response.statusCode}');
+    print('BODY: ${response.body}');
+
     if (response.statusCode == 200) {
-      return json.decode(response.body);  // Retorna la respuesta en formato JSON
+      return json.decode(response.body);
     } else {
       throw Exception('Failed to post data');
     }
   }
+
+
 }

@@ -7,16 +7,14 @@ part of 'data_usuario.dart';
 // **************************************************************************
 
 DataUsuario _$DataUsuarioFromJson(Map<String, dynamic> json) => DataUsuario(
-  idUsuario: json['id_usuario'] as String,
-  nomUsuario: json['nom_usuario'] as String,
-  estadoUsuario: json['estado_usuario'] as String?,  // Modificado aquí
-  contrasena: json['contrasena'] as String,
+  usuarioId: (json['usuario_id'] as num).toInt(),
+  usuarioNombre: json['usuario_nombre'] as String,
+  usuarioTipo: json['usuario_tipo'] as String?,
 );
 
 Map<String, dynamic> _$DataUsuarioToJson(DataUsuario instance) =>
     <String, dynamic>{
-      'id_usuario': instance.idUsuario,
-      'nom_usuario': instance.nomUsuario,
-      'estado_usuario': instance.estadoUsuario,
-      'contrasena': instance.contrasena,
+      'usuario_id': instance.usuarioId,
+      'usuario_nombre': instance.usuarioNombre,
+      'usuario_tipo': instance.usuarioTipo,
     };

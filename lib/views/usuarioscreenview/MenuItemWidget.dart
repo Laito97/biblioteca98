@@ -3,13 +3,10 @@ import '../../models/data_usuario.dart';
 
 class MenuItemWidget extends StatelessWidget {
   final DataUsuario usuario;
-  final Function(DataUsuario) onEdit;
-  final Function(DataUsuario) onDelete;
+
 
   MenuItemWidget({
-    required this.usuario,
-    required this.onEdit,
-    required this.onDelete,
+    required this.usuario
   });
 
   @override
@@ -17,19 +14,19 @@ class MenuItemWidget extends StatelessWidget {
     return Card(
       margin: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
       child: ListTile(
-        title: Text(usuario.nomUsuario),
-        subtitle: Text("ID: ${usuario.idUsuario}"),
+        title: Text(usuario.usuarioNombre),
+        subtitle: Text("ID: ${usuario.usuarioTipo}"),
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            IconButton(
-              icon: Icon(Icons.edit),
-              onPressed: () => onEdit(usuario),
-            ),
-            IconButton(
-              icon: Icon(Icons.delete),
-              onPressed: () => onDelete(usuario),
-            ),
+            // IconButton(
+            //   icon: Icon(Icons.edit),
+            //   onPressed: () => onEdit(usuario),
+            // ),
+            // IconButton(
+            //   icon: Icon(Icons.delete),
+            //   onPressed: () => onDelete(usuario),
+            // ),
           ],
         ),
       ),
