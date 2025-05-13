@@ -3,7 +3,7 @@ import 'dart:convert';
 
 // ApiClient centralizado que realiza las peticiones
 class ApiClient {
-  final String baseUrl = 'http://192.168.18.38:3000';  // Base de la API
+  final String baseUrl = 'http://192.168.1.16:3000';  // Base de la API
 
   // Petición GET genérica
   Future<Map<String, dynamic>> get(String endpoint) async {
