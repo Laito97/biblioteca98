@@ -1,230 +1,201 @@
+import 'package:biblioteca97/models/libro.dart';
 import 'package:flutter/material.dart';
-import '../../services/api_service.dart';
 import '../../models_ant/data_libro.dart';
+import '../../services/api_client.dart';
+import '../../services/api_service.dart';
 import 'LibroItemWidget.dart';
 
 class LibrosScreen extends StatefulWidget {
-  final ApiService apiService;
+final ApiService apiService;
 
-  const LibrosScreen({Key? key, required this.apiService}) : super(key: key);
+  LibrosScreen ({required this.apiService});
 
   @override
   _LibrosScreenState createState() => _LibrosScreenState();
 }
 
 class _LibrosScreenState extends State<LibrosScreen> {
-  late Future<List<DataLibro>> libros;
-  List<DataLibro> librosList = [];
-  List<DataLibro> filteredLibros = [];
+  late ApiService _apiService;
+  List<Libro> listaLibros = [];
+  bool isEditing = false;
+  late DataLibro libroEditando;
+
   TextEditingController searchController = TextEditingController();
+  TextEditingController tituloController = TextEditingController();
+  TextEditingController autorController = TextEditingController();
+  TextEditingController existenciasController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
-    _loadLibros();
+    _apiService = ApiService(client: ApiClient());
+    _fetchLibros();
     searchController.addListener(_onSearchChanged);
   }
 
-  // Carga los libros desde la API
-  void _loadLibros() {
-    libros = widget.apiService.fetchLibros();
-    libros.then((data) {
-      setState(() {
-        librosList = data;
-        filteredLibros = data;
-      });
-    }).catchError((e) {
-      print("Error al cargar los libros: $e");
-    });
+  Future<void> _fetchLibros() async {
+    try {
+      listaLibros = await _apiService.listLibrosV2();
+      setState(() {});
+    } catch (e) {
+      print("Error al obtener libros: $e");
+    }
   }
 
-  // Filtra los libros según el texto en el campo de búsqueda
   void _onSearchChanged() {
+    setState(() {});
+  }
+
+  void _onAddLibro() {
     setState(() {
-      filteredLibros = librosList.where((libro) {
-        return (libro.nomLibro?.toLowerCase() ?? '').contains(searchController.text.toLowerCase()) ||
-            (libro.nomAutor?.toLowerCase() ?? '').contains(searchController.text.toLowerCase());
-      }).toList();
+      isEditing = false;
+      tituloController.clear();
+      autorController.clear();
+      existenciasController.clear();
     });
+    _showAddUpdateDialog();
   }
 
-  // Lógica para editar un libro
-  void _onEdit(DataLibro libro) {
-    TextEditingController nomLibroController = TextEditingController(text: libro.nomLibro);
-    TextEditingController nomAutorController = TextEditingController(text: libro.nomAutor);
-    TextEditingController existenciasController = TextEditingController(text: libro.existencias.toString());
-
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text("Editar Libro"),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: nomLibroController,
-              decoration: InputDecoration(labelText: 'Título'),
-            ),
-            TextField(
-              controller: nomAutorController,
-              decoration: InputDecoration(labelText: 'Autor'),
-            ),
-            TextField(
-              controller: existenciasController,
-              keyboardType: TextInputType.number,
-              decoration: InputDecoration(labelText: 'Existencias'),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: Text("Cancelar")),
-          TextButton(
-            onPressed: () async {
-              // Actualizamos el libro
-              libro.nomLibro = nomLibroController.text;
-              libro.nomAutor = nomAutorController.text;
-              libro.existencias = int.tryParse(existenciasController.text) ?? libro.existencias;
-
-              bool success = await widget.apiService.updateLibro(libro);
-              if (success) {
-                setState(() {
-                  _loadLibros(); // Recargamos los libros
-                });
-                Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Libro editado con éxito")));
-              } else {
-                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error al editar")));
-              }
-            },
-            child: Text("Guardar Cambios"),
-          ),
-        ],
-      ),
-    );
+  void _onEditLibro(DataLibro libro) {
+    setState(() {
+      isEditing = true;
+      libroEditando = libro;
+      tituloController.text = libro.nomLibro ?? '';
+      autorController.text = libro.nomAutor ?? '';
+      existenciasController.text = libro.existencias.toString();
+    });
+    _showAddUpdateDialog();
   }
 
-  // Lógica para eliminar un libro
-  void _onDelete(DataLibro libro) async {
+  void _onDeleteLibro(DataLibro libro) async {
     final confirm = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text("Confirmar eliminación"),
-        content: Text("¿Estás seguro de que deseas eliminar el libro '${libro.nomLibro}'?"),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: Text("Cancelar")),
-          TextButton(onPressed: () => Navigator.pop(context, true), child: Text("Eliminar")),
-        ],
-      ),
+      builder:
+          (context) => AlertDialog(
+            title: Text("Confirmar eliminación"),
+            content: Text("¿Estás seguro de eliminar '${libro.nomLibro}'?"),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: Text("Cancelar"),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(context, true),
+                child: Text("Eliminar"),
+              ),
+            ],
+          ),
     );
 
     if (confirm == true) {
-      final success = await widget.apiService.deleteLibro(libro.isbn);
+      final success = await _apiService.deleteLibro(libro.isbn);
       if (success) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Libro eliminado")));
-        _loadLibros(); // Recarga los libros
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error al eliminar")));
+        _fetchLibros();
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text("Libro eliminado")));
       }
     }
   }
 
-  // Lógica para prestar un libro
-// Lógica para prestar un libro
-  void _onPrestar(DataLibro libro) async {
-    if (libro.existencias > 0) {
-      setState(() {
-        libro.existencias -= 1;
-      });
-
-      // Actualiza las existencias en el servidor
-      final success = await widget.apiService.updateLibro(libro);
-      if (success) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Has prestado el libro '${libro.nomLibro}'")));
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error al actualizar el libro")));
-      }
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("No hay más ejemplares disponibles")));
-    }
-  }
-
-
-  // Lógica para agregar un libro
-  void _onAddLibro() {
-    TextEditingController nomLibroController = TextEditingController();
-    TextEditingController nomAutorController = TextEditingController();
-    TextEditingController existenciasController = TextEditingController();
-
+  void _showAddUpdateDialog() {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text("Agregar Libro"),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: nomLibroController,
-              decoration: InputDecoration(labelText: 'Título'),
+      builder:
+          (context) => AlertDialog(
+            title: Text(isEditing ? 'Editar Libro' : 'Agregar Libro'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  controller: tituloController,
+                  decoration: InputDecoration(labelText: 'Título'),
+                ),
+                TextField(
+                  controller: autorController,
+                  decoration: InputDecoration(labelText: 'Autor'),
+                ),
+                TextField(
+                  controller: existenciasController,
+                  decoration: InputDecoration(labelText: 'Existencias'),
+                  keyboardType: TextInputType.number,
+                ),
+              ],
             ),
-            TextField(
-              controller: nomAutorController,
-              decoration: InputDecoration(labelText: 'Autor'),
-            ),
-            TextField(
-              controller: existenciasController,
-              keyboardType: TextInputType.number,
-              decoration: InputDecoration(labelText: 'Existencias'),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: Text("Cancelar")),
-          TextButton(
-            onPressed: () async {
-              DataLibro nuevoLibro = DataLibro(
-                nomLibro: nomLibroController.text,
-                nomAutor: nomAutorController.text,
-                existencias: int.tryParse(existenciasController.text) ?? 0,
-                isbn: '', // Aquí puede generarse o dejarse vacío si la API lo maneja
-              );
-
-              bool success = await widget.apiService.addLibro(nuevoLibro);
-              if (success) {
-                setState(() {
-                  _loadLibros(); // Recargamos los libros
-                });
-                Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Libro agregado")));
-              } else {
-                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error al agregar libro")));
-              }
-            },
-            child: Text("Agregar Libro"),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: Text('Cancelar'),
+              ),
+              TextButton(
+                onPressed: () {
+                  isEditing ? _updateLibro() : _addLibro();
+                },
+                child: Text(isEditing ? 'Actualizar' : 'Agregar'),
+              ),
+            ],
           ),
-        ],
-      ),
     );
+  }
+
+  Future<void> _addLibro() async {
+    final nuevoLibro = DataLibro(
+      isbn: '',
+      nomLibro: tituloController.text,
+      nomAutor: autorController.text,
+      existencias: int.tryParse(existenciasController.text) ?? 0,
+    );
+
+    final success = await _apiService.addLibro(nuevoLibro);
+    if (success) {
+      _fetchLibros();
+      Navigator.of(context).pop();
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Libro agregado")));
+    }
+  }
+
+  Future<void> _updateLibro() async {
+    final libroActualizado = DataLibro(
+      isbn: libroEditando.isbn,
+      nomLibro: tituloController.text,
+      nomAutor: autorController.text,
+      existencias:
+          int.tryParse(existenciasController.text) ?? libroEditando.existencias,
+    );
+
+    final success = await _apiService.updateLibro(libroActualizado);
+    if (success) {
+      _fetchLibros();
+      Navigator.of(context).pop();
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Libro actualizado")));
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    final librosFiltrados = listaLibros.where((libro) {
+  final filtro = searchController.text.toLowerCase();
+  final nombreAutor = libro.autor?.autor_nom?.toLowerCase() ?? '';
+  final nombreLibro = libro.libro_nom?.toLowerCase() ?? '';
+  return nombreLibro.contains(filtro) || nombreAutor.contains(filtro);
+}).toList();
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Libros"),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.add),
-            onPressed: _onAddLibro,
-          ),
-        ],
+        title: Text("Libros"),
+        actions: [IconButton(icon: Icon(Icons.add), onPressed: _onAddLibro)],
       ),
       body: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+            padding: const EdgeInsets.all(8.0),
             child: TextField(
               controller: searchController,
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 labelText: "Buscar por autor o título",
                 prefixIcon: Icon(Icons.search),
                 border: OutlineInputBorder(),
@@ -232,38 +203,41 @@ class _LibrosScreenState extends State<LibrosScreen> {
             ),
           ),
           Expanded(
-            child: FutureBuilder<List<DataLibro>>(
-              future: libros,
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
-                }
-
-                if (snapshot.hasError) {
-                  return Center(child: Text("Error: ${snapshot.error}"));
-                }
-
-                if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                  return const Center(child: Text("No hay libros disponibles"));
-                }
-
-                return ListView.builder(
-                  itemCount: filteredLibros.length,
-                  itemBuilder: (context, index) {
-                    final libro = filteredLibros[index];
-                    return LibroItemWidget(
-                      libro: libro,
-                      onEdit: () => _onEdit(libro),
-                      onDelete: () => _onDelete(libro),
-                      onPrestar: () => _onPrestar(libro),
-                    );
-                  },
-                );
-              },
-            ),
+            child:
+                librosFiltrados.isEmpty
+                    ? Center(child: Text("No hay libros disponibles"))
+                    : ListView.builder(
+                      itemCount: librosFiltrados.length,
+                      itemBuilder: (context, index) {
+                        final libro = librosFiltrados[index];
+                        return LibroItemWidget(
+                          libro: libro,
+                          onEdit: _onEditLibro,
+                          onDelete: _onDeleteLibro,
+                          onPrestar: _onPrestar,
+                        );
+                      },
+                    ),
           ),
         ],
       ),
     );
+  }
+
+  void _onPrestar(DataLibro libro) async {
+    if (libro.existencias > 0) {
+      libro.existencias -= 1;
+      final success = await _apiService.updateLibro(libro);
+      if (success) {
+        _fetchLibros();
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text("Libro prestado")));
+      }
+    } else {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("No hay existencias disponibles")));
+    }
   }
 }

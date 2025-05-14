@@ -1,11 +1,12 @@
+import 'package:biblioteca97/models/libro.dart';
 import 'package:flutter/material.dart';
 import '../../models_ant/data_libro.dart';
 
 class LibroItemWidget extends StatelessWidget {
-  final DataLibro libro;
-  final VoidCallback onEdit;
-  final VoidCallback onDelete;
-  final VoidCallback onPrestar;
+  final Libro libro;
+  final Function(DataLibro) onEdit;
+  final Function(DataLibro) onDelete;
+  final Function(DataLibro) onPrestar;
 
   const LibroItemWidget({
     Key? key,
@@ -24,27 +25,30 @@ class LibroItemWidget extends StatelessWidget {
       child: ListTile(
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         title: Text(
-          libro.nomLibro ?? 'Sin título',
+          libro.libro_nom ?? '',
           style: const TextStyle(fontWeight: FontWeight.bold),
         ),
         subtitle: Text(
-          "Autor: ${libro.nomAutor ?? 'Desconocido'}\nCategoría: ${libro.nomCategoria ?? 'Sin categoría'}",
+          "Autor: ${libro.autor?.autor_nom ?? 'Desconocido'}\n"
+          "Categoría: ${libro.categoria?.categoria_nom ?? 'Sin categoría'}\n"
+          "Existencias: ${libro.existencias ?? 0}\n"
+          "ISBN: ${libro.isbn ?? 'No disponible'}",
         ),
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            IconButton(
-              icon: const Icon(Icons.edit),
-              onPressed: onEdit,
-            ),
-            IconButton(
-              icon: const Icon(Icons.delete, color: Colors.red),
-              onPressed: onDelete,
-            ),
-            IconButton(
-              icon: const Icon(Icons.bookmark, color: Colors.blue),
-              onPressed: onPrestar,
-            ),
+          //  IconButton(
+          //    icon: const Icon(Icons.edit),
+          //    onPressed: () => onEdit(libro),
+          //  ),
+          //  IconButton(
+          //    icon: const Icon(Icons.delete, color: Colors.red),
+          //    onPressed: () => onDelete(libro),
+          //  ),
+          //  IconButton(
+          //    icon: const Icon(Icons.bookmark, color: Colors.blue),
+          //    onPressed: () => onPrestar(libro),
+          //  ),
           ],
         ),
       ),

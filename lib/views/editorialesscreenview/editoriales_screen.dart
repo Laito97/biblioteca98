@@ -1,3 +1,4 @@
+import 'package:biblioteca97/models/editorial.dart';
 import 'package:flutter/material.dart';
 import '../../models_ant/data_editorial.dart';
 import '../../services/api_client.dart';
@@ -10,8 +11,8 @@ class EditorialesScreen extends StatefulWidget {
 }
 
 class _EditorialesScreenState extends State<EditorialesScreen> {
-  late ApiService apiService;
-  late Future<List<DataEditorial>> editorialesFuture;
+  late ApiService _apiService;
+  List<Editorial> listaEditoriales = [];
 
   bool isEditing = false;
   late DataEditorial editorialEditando;
@@ -22,85 +23,23 @@ class _EditorialesScreenState extends State<EditorialesScreen> {
   @override
   void initState() {
     super.initState();
-    apiService = ApiService(client: ApiClient());
-    editorialesFuture = apiService.fetchEditoriales();
+    _apiService = ApiService(client: ApiClient());
+    _fetchEditoriales();
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text("Editoriales"),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.add),
-            onPressed: _addEditorial,
-          ),
-        ],
-      ),
-      body: FutureBuilder<List<DataEditorial>>(
-        future: editorialesFuture,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          } else if (snapshot.hasError) {
-            return Center(child: Text("Error: ${snapshot.error}"));
-          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return const Center(child: Text("No hay editoriales disponibles"));
-          } else {
-            final editoriales = snapshot.data!;
-
-            return ListView.builder(
-              itemCount: editoriales.length,
-              itemBuilder: (context, index) {
-                return MenuItemWidget(
-                  editorial: editoriales[index],
-                  onEdit: () => _editEditorial(editoriales[index]),
-                  onDelete: () => _deleteEditorial(editoriales[index].idEditorial),
-                );
-              },
-            );
-          }
-        },
-      ),
-    );
+  // Obtener editoriales desde la API
+Future<void> _fetchEditoriales() async {
+  try {
+    listaEditoriales = await _apiService.listEditorialesV2();
+    print("Editoriales recibidas: ${listaEditoriales.length}");
+    setState(() {});
+  } catch (e) {
+    print("Error al obtener editoriales: $e");
   }
+}
 
-  // Mostrar diálogo para agregar
-  Future<void> _addEditorial() async {
-    setState(() {
-      isEditing = false;
-      idController.clear();
-      nomController.clear();
-    });
-    _showAddUpdateDialog();
-  }
 
-  // Mostrar diálogo para editar
-  Future<void> _editEditorial(DataEditorial editorial) async {
-    setState(() {
-      isEditing = true;
-      editorialEditando = editorial;
-      idController.text = editorial.idEditorial;
-      nomController.text = editorial.nomEditorial;
-    });
-    _showAddUpdateDialog();
-  }
-
-  // Eliminar una editorial
-  Future<void> _deleteEditorial(String idEditorial) async {
-    final result = await apiService.deleteEditorial(idEditorial);
-    if (result) {
-      setState(() {
-        editorialesFuture = apiService.fetchEditoriales();
-      });
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Editorial eliminada')));
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Error al eliminar editorial')));
-    }
-  }
-
-  // Diálogo para agregar o editar
+  // Mostrar diálogo de agregar/editar
   void _showAddUpdateDialog() {
     showDialog(
       context: context,
@@ -128,7 +67,7 @@ class _EditorialesScreenState extends State<EditorialesScreen> {
             ),
             TextButton(
               onPressed: () {
-                isEditing ? _updateEditorial() : _addEditorialWithForm();
+                isEditing ? _updateEditorial() : _addEditorial();
               },
               child: Text(isEditing ? 'Actualizar' : 'Agregar'),
             ),
@@ -138,31 +77,97 @@ class _EditorialesScreenState extends State<EditorialesScreen> {
     );
   }
 
-  // Agregar editorial
-  Future<void> _addEditorialWithForm() async {
+  // Agregar nueva editorial
+  Future<void> _addEditorial() async {
     final nuevaEditorial = DataEditorial(
       idEditorial: DateTime.now().millisecondsSinceEpoch.toString(),
       nomEditorial: nomController.text,
     );
 
-    await apiService.addEditorial(nuevaEditorial);
-    Navigator.of(context).pop();
-    setState(() {
-      editorialesFuture = apiService.fetchEditoriales();
-    });
+    try {
+      await _apiService.addEditorial(nuevaEditorial);
+      _fetchEditoriales();
+      Navigator.of(context).pop();
+    } catch (e) {
+      print("Error al agregar editorial: $e");
+    }
   }
 
-  // Actualizar editorial
+  // Actualizar editorial existente
   Future<void> _updateEditorial() async {
     final editorialActualizada = DataEditorial(
       idEditorial: idController.text,
       nomEditorial: nomController.text,
     );
 
-    await apiService.updateEditorial(editorialActualizada);
-    Navigator.of(context).pop();
+    try {
+      await _apiService.updateEditorial(editorialActualizada);
+      _fetchEditoriales();
+      Navigator.of(context).pop();
+    } catch (e) {
+      print("Error al actualizar editorial: $e");
+    }
+  }
+
+  // Editar editorial existente
+  void _editEditorial(DataEditorial editorial) {
     setState(() {
-      editorialesFuture = apiService.fetchEditoriales();
+      isEditing = true;
+      editorialEditando = editorial;
+      idController.text = editorial.idEditorial;
+      nomController.text = editorial.nomEditorial;
     });
+    _showAddUpdateDialog();
+  }
+
+  // Eliminar una editorial
+void _deleteEditorial(DataEditorial editorial) async {
+  print('Eliminando editorial: ${editorial.nomEditorial}');
+  try {
+    final result = await _apiService.deleteEditorial(editorial.idEditorial);
+    if (result) {
+      _fetchEditoriales(); // Actualizamos la lista
+    } else {
+      print("Error al eliminar editorial.");
+    }
+  } catch (e) {
+    print("Error al eliminar editorial: $e");
+  }
+}
+
+  // Vista principal
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Editoriales'),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.add),
+            onPressed: () {
+              setState(() {
+                isEditing = false;
+                idController.clear();
+                nomController.clear();
+              });
+              _showAddUpdateDialog();
+            },
+          ),
+        ],
+      ),
+      body: listaEditoriales.isEmpty
+          ? Center(child: CircularProgressIndicator())
+          : ListView.builder(
+              itemCount: listaEditoriales.length,
+              itemBuilder: (context, index) {
+                final editorial = listaEditoriales[index];
+                return MenuItemWidget(
+                  editorial: editorial,
+                  onEdit: _editEditorial,
+                  onDelete:_deleteEditorial,
+                );
+              },
+            ),
+    );
   }
 }

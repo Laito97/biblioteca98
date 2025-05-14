@@ -1,7 +1,13 @@
 import 'package:biblioteca97/controllers/auth_controller.dart';
 import 'package:biblioteca97/controllers/autor_controller.dart';
+import 'package:biblioteca97/controllers/categoria_controller.dart';
+import 'package:biblioteca97/controllers/editorial_controller.dart';
+import 'package:biblioteca97/controllers/libro_controller.dart';
 import 'package:biblioteca97/controllers/usuario_controller.dart';
 import 'package:biblioteca97/models/autor.dart';
+import 'package:biblioteca97/models/categoria.dart';
+import 'package:biblioteca97/models/editorial.dart';
+import 'package:biblioteca97/models/libro.dart';
 import 'package:biblioteca97/models/usuario.dart';
 
 import '../models_ant/data_categoria.dart';
@@ -71,6 +77,54 @@ Future<List<Autor>> listAutorV2() async {
       if (data != null && data['autores'] != null && data['autores'] is List) {
         final response = AutorController.fromJson(data);
         return response.autores;
+      } else {
+        return [];
+      }
+    } catch (e) {
+      print("Error al obtener los usuarios: $e");
+      rethrow;
+    }
+  }
+
+  // Listar Editoriales V2
+Future<List<Editorial>> listEditorialesV2() async {
+    try {
+      final data = await client.get('/editoriales/list');
+      if (data != null && data['editoriales'] != null && data['editoriales'] is List) {
+        final response = EditorialController.fromJson(data);
+        return response.editoriales;
+      } else {
+        return [];
+      }
+    } catch (e) {
+      print("Error al obtener los usuarios: $e");
+      rethrow;
+    }
+  }
+
+    // Listar Categorias V2
+Future<List<Categoria>> listCategoriasV2() async {
+    try {
+      final data = await client.get('/categorias/list');
+      if (data != null && data['categorias'] != null && data['categorias'] is List) {
+        final response = CategoriaController.fromJson(data);
+        return response.categorias;
+      } else {
+        return [];
+      }
+    } catch (e) {
+      print("Error al obtener los usuarios: $e");
+      rethrow;
+    }
+  }
+
+      // Listar Libros V2
+Future<List<Libro>> listLibrosV2() async {
+    try {
+      final data = await client.get('/libros/list');
+      if (data != null && data['libros'] != null && data['libros'] is List) {
+        final response = LibroController.fromJson(data);
+        return response.libros;
       } else {
         return [];
       }

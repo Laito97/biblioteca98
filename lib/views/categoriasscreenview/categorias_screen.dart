@@ -1,3 +1,4 @@
+import 'package:biblioteca97/models/categoria.dart';
 import 'package:flutter/material.dart';
 import '../../models_ant/data_categoria.dart';
 import '../../services/api_client.dart';
@@ -11,7 +12,7 @@ class CategoriaScreen extends StatefulWidget {
 
 class _CategoriaScreenState extends State<CategoriaScreen> {
   late ApiService _apiService;
-  List<DataCategoria> listaCategorias = [];
+  List<Categoria> listaCategorias = [];
   bool isEditing = false; // Para saber si estamos en modo edición
   late DataCategoria categoriaEditando; // Para almacenar la categoría que estamos editando
 
@@ -29,7 +30,7 @@ class _CategoriaScreenState extends State<CategoriaScreen> {
   // Fetch de categorías desde la API
   Future<void> _fetchCategorias() async {
     try {
-      listaCategorias = await _apiService.fetchCategorias();
+      listaCategorias = await _apiService.listCategoriasV2();
       setState(() {}); // Actualizamos el estado para que se muestre la lista
     } catch (e) {
       print("Error al obtener categorías: $e");
