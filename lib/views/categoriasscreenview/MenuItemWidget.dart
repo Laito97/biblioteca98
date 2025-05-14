@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../models/data_categoria.dart';  // Asegúrate de que el archivo correcto sea importado
+import '../../models_ant/data_categoria.dart';  // Asegúrate de que el archivo correcto sea importado
 
 class MenuItemWidget extends StatelessWidget {
   final DataCategoria categoria;  // Cambié DataAutor por DataCategoria

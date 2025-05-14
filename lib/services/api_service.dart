@@ -1,14 +1,15 @@
-import 'package:biblioteca97/models/auth_response.dart';
-import 'package:biblioteca97/models/usuario_response.dart';
+import 'package:biblioteca97/controllers/auth_controller.dart';
+import 'package:biblioteca97/controllers/usuario_controller.dart';
+import 'package:biblioteca97/models/usuario.dart';
 
-import '../models/data_categoria.dart';
-import '../models/data_editorial.dart';
-import '../models/data_libro.dart';
-import '../models/data_prestamo.dart';
-import '../models/data_usuario.dart';
-import '../models/data_autor.dart';
-import '../models/admin_usuario_response.dart';
-import '../models/autor_response.dart';
+import '../models_ant/data_categoria.dart';
+import '../models_ant/data_editorial.dart';
+import '../models_ant/data_libro.dart';
+import '../models_ant/data_prestamo.dart';
+import '../models_ant/data_usuario.dart';
+import '../models_ant/data_autor.dart';
+import '../models_ant/admin_usuario_response.dart';
+import '../models_ant/autor_response.dart';
 import 'api_client.dart';
 
 class ApiService {
@@ -43,11 +44,11 @@ class ApiService {
     }
   }
 
-  Future<List<DataUsuario>> listUserV2() async {
+  Future<List<Usuario>> listUserV2() async {
     try {
       final data = await client.get('/usuarios/list');
       if (data != null && data['usuarios'] != null && data['usuarios'] is List) {
-        final response = UsuariosResponse.fromJson(data);
+        final response = UsuarioController.fromJson(data);
         return response.usuarios;
       } else {
         return [];

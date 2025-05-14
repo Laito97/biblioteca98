@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../models/data_editorial.dart';
+import '../../models_ant/data_editorial.dart';
 
 class MenuItemWidget extends StatelessWidget {
   final DataEditorial editorial;

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../models/data_editorial.dart';
+import '../../models_ant/data_editorial.dart';
 import '../../services/api_client.dart';
 import '../../services/api_service.dart';
 import 'MenuItemWidget.dart';

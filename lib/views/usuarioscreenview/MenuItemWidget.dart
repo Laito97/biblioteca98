@@ -1,8 +1,8 @@
+import 'package:biblioteca97/models/usuario.dart';
 import 'package:flutter/material.dart';
-import '../../models/data_usuario.dart';
 
 class MenuItemWidget extends StatelessWidget {
-  final DataUsuario usuario;
+  final Usuario usuario;
 
 
   MenuItemWidget({
@@ -14,8 +14,8 @@ class MenuItemWidget extends StatelessWidget {
     return Card(
       margin: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
       child: ListTile(
-        title: Text(usuario.usuarioNombre),
-        subtitle: Text("ID: ${usuario.usuarioTipo}"),
+        title: Text(usuario.nombre ?? ''),
+        subtitle: Text("ID: ${usuario.tipoUsuario}"),
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
           children: [

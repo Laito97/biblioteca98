@@ -1,7 +1,8 @@
 import 'dart:ffi';
 
+import 'package:biblioteca97/models/usuario.dart';
 import 'package:flutter/material.dart';
-import '../../models/data_usuario.dart';
+import '../../models_ant/data_usuario.dart';
 import '../../services/api_client.dart';
 import '../../services/api_service.dart';
 import 'MenuItemWidget.dart';
@@ -13,10 +14,10 @@ class UsuariosScreen extends StatefulWidget {
 
 class _UsuariosScreenState extends State<UsuariosScreen> {
   late ApiService _apiService;
-  List<DataUsuario> listaUsuarios = [];
-  List<DataUsuario> usuariosFiltrados = [];
+  List<Usuario> listaUsuarios = [];
+  List<Usuario> usuariosFiltrados = [];
   bool isEditing = false;
-  late DataUsuario usuarioEditando;
+  late Usuario usuarioEditando;
 
   TextEditingController idController = TextEditingController();
   TextEditingController nomController = TextEditingController();

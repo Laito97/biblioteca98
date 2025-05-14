@@ -4,15 +4,16 @@ part 'data_autor.g.dart';  // Este archivo será generado automáticamente por b
 
 @JsonSerializable()
 class DataAutor {
-  @JsonKey(name: 'id_autor')
+  @JsonKey(name: 'autor_id')
   final String idAutor;
 
-  @JsonKey(name: 'nom_autor')
+  @JsonKey(name: 'autor_nom')
   final String nomAutor;
 
   DataAutor({
     required this.idAutor,
     required this.nomAutor,
+
   });
 
   // Generados automáticamente por build_runner
