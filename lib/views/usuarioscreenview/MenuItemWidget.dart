@@ -14,8 +14,8 @@ class MenuItemWidget extends StatelessWidget {
     return Card(
       margin: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
       child: ListTile(
-        title: Text(usuario.nombre ?? ''),
-        subtitle: Text("ID: ${usuario.tipoUsuario}"),
+        title: Text(usuario.usuarioNombre),
+        subtitle: Text("ID: ${usuario.tipoUsuario.nombre}"),
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
