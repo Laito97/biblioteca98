@@ -1,8 +1,9 @@
+import 'package:biblioteca97/models/autor.dart';
 import 'package:flutter/material.dart';
 import '../../models_ant/data_autor.dart';
 
 class MenuItemWidget extends StatelessWidget {
-  final DataAutor autor;
+  final Autor autor;
   final Function(DataAutor) onEdit;
   final Function(DataAutor) onDelete;
 
@@ -15,19 +16,19 @@ class MenuItemWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListTile(
-      title: Text(autor.nomAutor),
-      subtitle: Text('ID: ${autor.idAutor}'),
+      title: Text(autor.autor_nom ?? ''),
+      subtitle: Text('ID: ${autor.autor_id}'),
       trailing: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          IconButton(
-            icon: Icon(Icons.edit),
-            onPressed: () => onEdit(autor),
-          ),
-          IconButton(
-            icon: Icon(Icons.delete),
-            onPressed: () => onDelete(autor),
-          ),
+        //  IconButton(
+        //    icon: Icon(Icons.edit),
+        //    onPressed: () => onEdit(autor),
+        //  ),
+        //  IconButton(
+        //    icon: Icon(Icons.delete),
+        //    onPressed: () => onDelete(autor),
+        //  ),
         ],
       ),
     );

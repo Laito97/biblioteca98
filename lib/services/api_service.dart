@@ -1,5 +1,7 @@
 import 'package:biblioteca97/controllers/auth_controller.dart';
+import 'package:biblioteca97/controllers/autor_controller.dart';
 import 'package:biblioteca97/controllers/usuario_controller.dart';
+import 'package:biblioteca97/models/autor.dart';
 import 'package:biblioteca97/models/usuario.dart';
 
 import '../models_ant/data_categoria.dart';
@@ -44,6 +46,8 @@ class ApiService {
     }
   }
 
+
+  // Listar Usuarios V2
   Future<List<Usuario>> listUserV2() async {
     try {
       final data = await client.get('/usuarios/list');
@@ -59,6 +63,21 @@ class ApiService {
     }
   }
 
+// Listar Autores V2
+Future<List<Autor>> listAutorV2() async {
+    try {
+      final data = await client.get('/autores/list');
+      if (data != null && data['autores'] != null && data['autores'] is List) {
+        final response = AutorController.fromJson(data);
+        return response.autores;
+      } else {
+        return [];
+      }
+    } catch (e) {
+      print("Error al obtener los usuarios: $e");
+      rethrow;
+    }
+  }
 
 
 

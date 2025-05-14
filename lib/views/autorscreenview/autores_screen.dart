@@ -1,3 +1,4 @@
+import 'package:biblioteca97/models/autor.dart';
 import 'package:flutter/material.dart';
 import '../../models_ant/data_autor.dart';
 import '../../services/api_client.dart';
@@ -11,7 +12,7 @@ class AutoresScreen extends StatefulWidget {
 
 class _AutoresScreenState extends State<AutoresScreen> {
   late ApiService _apiService;
-  List<DataAutor> listaAutores = [];
+  List<Autor> listaAutores = [];
   bool isEditing = false; // Para saber si estamos en modo edición
   late DataAutor autorEditando; // Para almacenar el autor que estamos editando
 
@@ -30,7 +31,7 @@ class _AutoresScreenState extends State<AutoresScreen> {
   // Fetch de autores desde la API
   Future<void> _fetchAutores() async {
     try {
-      listaAutores = await _apiService.fetchAutores();
+      listaAutores = await _apiService.listAutorV2();
       setState(() {}); // Actualizamos el estado para que se muestre la lista
     } catch (e) {
       print("Error al obtener autores: $e");
