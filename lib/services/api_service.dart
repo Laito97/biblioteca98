@@ -52,6 +52,7 @@ class ApiService {
     try {
       final data = await client.get('/usuarios/list');
       if (data != null && data['usuarios'] != null && data['usuarios'] is List) {
+        print("DATA RECIBIDA: $data");
         final response = UsuarioController.fromJson(data);
         return response.usuarios;
       } else {

@@ -2,29 +2,24 @@ import 'package:biblioteca97/models/persona.dart';
 import 'package:biblioteca97/models/tipo_usuario.dart';
 
 class Usuario {
-  final int? id;
-  final String? nombre;
-  final String? correo;
-  final TipoUsuario? tipoUsuario;
-  final Persona? persona;
+  final int usuarioId;
+  final String usuarioNombre;
+  final Persona persona;
+  final TipoUsuario tipoUsuario;
 
   Usuario({
-    required this.id,
-    required this.nombre,
-    required this.correo,
-    this.tipoUsuario,
-    this.persona,
+    required this.usuarioId,
+    required this.usuarioNombre,
+    required this.tipoUsuario,
+    required this.persona,
   });
 
   factory Usuario.fromJson(Map<String, dynamic> json) {
     return Usuario(
-      id: json['id'] ?? 0,
-      nombre: json['nombre'],
-      correo: json['correo'],
-      tipoUsuario: json['tipo_usuario'] != null
-          ? TipoUsuario.fromJson(json['tipo_usuario'])
-          : null,
-      persona: json['persona'] != null ? Persona.fromJson(json['persona']) : null,
+      usuarioId: json['usuario_id'] ?? 0,
+      usuarioNombre: json['usuario_nombre'] ?? '',
+      tipoUsuario: TipoUsuario.fromJson(json['usuario_tipo'] ?? {}),
+      persona: Persona.fromJson(json['persona'] ?? {}),
     );
   }
 }
