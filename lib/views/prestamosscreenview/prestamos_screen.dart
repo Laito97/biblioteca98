@@ -1,24 +1,33 @@
+import 'package:biblioteca97/models/prestamo.dart';
 import 'package:flutter/material.dart';
 import 'package:biblioteca97/models_ant/data_prestamo.dart';
 import 'package:biblioteca97/services/api_service.dart';
+import 'PrestamoItemWidget.dart';
 
-class PrestamoScreen extends StatefulWidget {
+class PrestamosScreen extends StatefulWidget {
   final ApiService apiService;
 
-  PrestamoScreen({required this.apiService});
+  PrestamosScreen({required this.apiService});
 
   @override
-  _PrestamoScreenState createState() => _PrestamoScreenState();
+  _PrestamosScreenState createState() => _PrestamosScreenState();
 }
 
-class _PrestamoScreenState extends State<PrestamoScreen> {
-  late Future<List<DataPrestamo>> _prestamosFuture;
+class _PrestamosScreenState extends State<PrestamosScreen> {
+  late ApiService _apiService;
+  late Future<List<Prestamo>> _prestamosFuture;
 
   @override
   void initState() {
     super.initState();
-    // Cargar los préstamos cuando se inicializa la pantalla
-    _prestamosFuture = widget.apiService.fetchPrestamos();
+    _apiService = widget.apiService;
+    _fetchPrestamos();
+  }
+
+  Future<void> _fetchPrestamos() async {
+    setState(() {
+      _prestamosFuture = _apiService.listPrestamosV2();
+    });
   }
 
   @override
@@ -27,7 +36,7 @@ class _PrestamoScreenState extends State<PrestamoScreen> {
       appBar: AppBar(
         title: Text('Préstamos'),
       ),
-      body: FutureBuilder<List<DataPrestamo>>(
+      body: FutureBuilder<List<Prestamo>>(
         future: _prestamosFuture,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
@@ -37,29 +46,14 @@ class _PrestamoScreenState extends State<PrestamoScreen> {
           } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
             return Center(child: Text('No hay préstamos disponibles.'));
           } else {
-            List<DataPrestamo> prestamos = snapshot.data!;
+            List<Prestamo> prestamos = snapshot.data!;
             return ListView.builder(
               itemCount: prestamos.length,
               itemBuilder: (context, index) {
                 final prestamo = prestamos[index];
-                return ListTile(
-                  title: Text('ID Préstamo: ${prestamo.idPrestamo}'),
-                  subtitle: Text('ISBN: ${prestamo.isbn}\nFecha: ${prestamo.fechaPrestamo}'),
-                  trailing: IconButton(
-                    icon: Icon(Icons.delete),
-                    onPressed: () async {
-                      // Lógica para devolver o eliminar préstamo (ajustar según tu lógica)
-                      final success = await widget.apiService.deletePrestamo(prestamo.idPrestamo);
-                      if (success) {
-                        setState(() {
-                          _prestamosFuture = widget.apiService.fetchPrestamos();
-                        });
-                      } else {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('Error al eliminar el préstamo.')));
-                      }
-                    },
-                  ),
+                return PrestamoItemWidget(
+                  prestamo: prestamo,
+                  onDelete: _onDeletePrestamo,
                 );
               },
             );
@@ -67,5 +61,39 @@ class _PrestamoScreenState extends State<PrestamoScreen> {
         },
       ),
     );
+  }
+
+  void _onDeletePrestamo(DataPrestamo prestamo) async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text("Confirmar eliminación"),
+        content: Text("¿Estás seguro de eliminar el préstamo con ID '${prestamo.idPrestamo}'?"),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text("Cancelar"),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: Text("Eliminar"),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm == true) {
+      final success = await _apiService.deletePrestamo(prestamo.idPrestamo);
+      if (success) {
+        _fetchPrestamos();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Préstamo eliminado')),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error al eliminar el préstamo')),
+        );
+      }
+    }
   }
 }
