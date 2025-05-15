@@ -10,7 +10,7 @@ import 'package:biblioteca97/views/autorscreenview/autores_screen.dart'; // Impo
 import 'package:biblioteca97/views/categoriasscreenview/categorias_screen.dart'; // Importar la pantalla de categorías
 import 'package:biblioteca97/views/librosscreenview/libros_screen.dart'; // Importar la pantalla de libros
 import 'package:biblioteca97/views/splashscreenview/splashscreenview.dart';
-import 'package:biblioteca97/views/navegacionview/navegacion_screen.dart';  // Importa NavegacionScreen
+import 'package:biblioteca97/views/navegacionview/navegacion_screen.dart';
 
 void main() {
   // Crear una instancia del ApiClient y ApiService
@@ -29,9 +29,11 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       title: 'Biblioteca App',
       theme: ThemeData(
         primarySwatch: Colors.blue,
+        fontFamily: 'Poppins',
       ),
       initialRoute: '/', // Pantalla inicial
       routes: {

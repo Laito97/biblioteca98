@@ -1,6 +1,6 @@
 name: biblioteca97
 description: "A new Flutter project."
-publish_to: 'none' # Remove this line if you wish to publish to pub.dev
+publish_to: 'none'
 
 version: 1.0.0+1
 
@@ -10,25 +10,73 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  provider: ^6.0.0  # Agrega esta línea si no está
-  shared_preferences: ^2.0.15  # Verifica la última versión
+  provider: ^6.0.0
+  shared_preferences: ^2.0.15
   cupertino_icons: ^1.0.8
-  http: ^0.13.6  # <-- Aquí se agregó la dependencia http
-  json_annotation: ^4.4.0  # <-- Dependencia necesaria para json_serializable
-  flutter_spinkit: ^5.1.0  # <-- Dependencia para spinner (agregada aquí)
-  fluttertoast: ^8.1.2  # <-- Agregada la dependencia para usar Toasts
+  http: ^1.0.6
+  json_annotation: ^4.4.0
+  flutter_spinkit: ^5.1.0
+  fluttertoast: ^8.1.2
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^5.0.0
-  build_runner: ^2.3.3  # <-- Dependencia para generar el código de json_serializable
-  json_serializable: ^6.0.0  # <-- Dependencia para json_serializable
+  build_runner: ^2.3.3
+  json_serializable: ^6.0.0
 
 flutter:
   uses-material-design: true
 
-  # Aquí van los assets para las imágenes y otros archivos estáticos
   assets:
     - assets/gif_libro.gif
-    - assets/user_card_3.png  # <- Agrega esta línea
+    - assets/user_card_3.png
+
+  fonts:
+    - family: Poppins
+      fonts:
+        - asset: assets/fonts/poppins/Poppins-Thin.ttf
+          weight: 100
+        - asset: assets/fonts/poppins/Poppins-ThinItalic.ttf
+          weight: 100
+          style: italic
+        - asset: assets/fonts/poppins/Poppins-ExtraLight.ttf
+          weight: 200
+        - asset: assets/fonts/poppins/Poppins-ExtraLightItalic.ttf
+          weight: 200
+          style: italic
+        - asset: assets/fonts/poppins/Poppins-Light.ttf
+          weight: 300
+        - asset: assets/fonts/poppins/Poppins-LightItalic.ttf
+          weight: 300
+          style: italic
+        - asset: assets/fonts/poppins/Poppins-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/poppins/Poppins-Italic.ttf
+          weight: 400
+          style: italic
+        - asset: assets/fonts/poppins/Poppins-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/poppins/Poppins-MediumItalic.ttf
+          weight: 500
+          style: italic
+        - asset: assets/fonts/poppins/Poppins-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/poppins/Poppins-SemiBoldItalic.ttf
+          weight: 600
+          style: italic
+        - asset: assets/fonts/poppins/Poppins-Bold.ttf
+          weight: 700
+        - asset: assets/fonts/poppins/Poppins-BoldItalic.ttf
+          weight: 700
+          style: italic
+        - asset: assets/fonts/poppins/Poppins-ExtraBold.ttf
+          weight: 800
+        - asset: assets/fonts/poppins/Poppins-ExtraBoldItalic.ttf
+          weight: 800
+          style: italic
+        - asset: assets/fonts/poppins/Poppins-Black.ttf
+          weight: 900
+        - asset: assets/fonts/poppins/Poppins-BlackItalic.ttf
+          weight: 900
+          style: italic
