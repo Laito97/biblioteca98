@@ -191,7 +191,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
     _mostrarCarga();
 
-    await Future.delayed(const Duration(seconds: 1));
+    await Future.delayed(const Duration(seconds: 2));
 
     try {
       final response = await apiService.loginV2(usuario, contrasena);

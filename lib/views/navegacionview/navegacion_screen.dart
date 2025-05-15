@@ -43,7 +43,7 @@ class NavigationDrawer extends StatelessWidget {
       child: Container(
         padding: EdgeInsets.only(
           top: 24 + MediaQuery.of(context).padding.top,
-          bottom: 24
+          bottom: 24,
         ),
         child: Column(
           children: const [
@@ -83,14 +83,12 @@ class NavigationDrawer extends StatelessWidget {
         (item) => ListTile(
           leading: Icon(item['icon']),
           title: Text(
-            item['title'], 
-            style: TextStyle(
-              fontWeight: FontWeight.w500,
-              fontSize: 15
-              )
-              ),
+            item['title'],
+            style: TextStyle(fontWeight: FontWeight.w500, fontSize: 15),
+          ),
           onTap: () {
-            Navigator.pop(context);
+            Navigator.pop(context); // Cierra el drawer si es necesario
+            _onMenuItemClick(item['title'], context);
           },
         ),
       ),
@@ -106,11 +104,38 @@ class NavigationDrawer extends StatelessWidget {
         leading: const Icon(Icons.exit_to_app),
         title: const Text('Cerrar sesión'),
         onTap: () {
-          Navigator.pop(context);
+          _cerrarSesion(context);
         },
       ),
     ],
   );
+
+  void _onMenuItemClick(String menu, BuildContext context) {
+    switch (menu.toLowerCase()) {
+      case 'usuarios':
+        Navigator.pushNamed(context, '/usuarios');
+        break;
+      case 'autores':
+        Navigator.pushNamed(context, '/autores');
+        break;
+      case 'editoriales':
+        Navigator.pushNamed(context, '/editoriales');
+        break;
+      case 'categorías':
+        Navigator.pushNamed(context, '/categorias');
+        break;
+      case 'libros':
+        Navigator.pushNamed(context, '/libros');
+        break;
+      case 'préstamos':
+        Navigator.pushNamed(context, '/prestamos');
+        break;
+    }
+  }
+
+  void _cerrarSesion(BuildContext context) {
+    Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
+  }
 }
 
 // class _NavegacionScreenState extends State<NavegacionScreen> {
@@ -203,7 +228,4 @@ class NavigationDrawer extends StatelessWidget {
 //     }
 //   }
 
-//   void _cerrarSesion(BuildContext context) {
-//     Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
-//   }
 // }
