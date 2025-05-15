@@ -1,5 +1,4 @@
 import 'package:biblioteca97/services/api_client.dart';
-
 import 'package:biblioteca97/views/prestamosscreenview/prestamos_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:biblioteca97/services/api_service.dart'; // Importa el servicio ApiService
@@ -45,7 +44,7 @@ class MyApp extends StatelessWidget {
         '/editoriales': (context) => EditorialesScreen(),
         '/categorias': (context) => CategoriaScreen(),
         '/libros': (context) => LibrosScreen(apiService: apiService),  // Pasa la instancia de apiService
-        '/prestamos': (context) => PrestamoScreen(apiService: apiService),  // Pasa la instancia de apiService
+        '/prestamos': (context) => PrestamosScreen(apiService: apiService),  // Pasa la instancia de apiService
       },
     );
   }

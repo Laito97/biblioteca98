@@ -3,11 +3,13 @@ import 'package:biblioteca97/controllers/autor_controller.dart';
 import 'package:biblioteca97/controllers/categoria_controller.dart';
 import 'package:biblioteca97/controllers/editorial_controller.dart';
 import 'package:biblioteca97/controllers/libro_controller.dart';
+import 'package:biblioteca97/controllers/prestamo_controller.dart';
 import 'package:biblioteca97/controllers/usuario_controller.dart';
 import 'package:biblioteca97/models/autor.dart';
 import 'package:biblioteca97/models/categoria.dart';
 import 'package:biblioteca97/models/editorial.dart';
 import 'package:biblioteca97/models/libro.dart';
+import 'package:biblioteca97/models/prestamo.dart';
 import 'package:biblioteca97/models/usuario.dart';
 
 import '../models_ant/data_categoria.dart';
@@ -134,6 +136,22 @@ Future<List<Libro>> listLibrosV2() async {
     }
   }
 
+
+      // Listar prestamos V2
+Future<List<Prestamo>> listPrestamosV2() async {
+    try {
+      final data = await client.get('/prestamos/list');
+      if (data != null && data['prestamos'] != null && data['prestamos'] is List) {
+        final response = PrestamoController.fromJson(data);
+        return response.prestamos;
+      } else {
+        return [];
+      }
+    } catch (e) {
+      print("Error al obtener los usuarios: $e");
+      rethrow;
+    }
+  }
 
 
 
