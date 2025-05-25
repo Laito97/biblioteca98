@@ -1,9 +1,10 @@
-import 'package:biblioteca97/models/autor.dart';
 import 'package:flutter/material.dart';
+import 'package:biblioteca97/models/autor.dart';
 import '../../models_ant/data_autor.dart';
 import '../../services/api_client.dart';
 import '../../services/api_service.dart'; // Asegúrate de importar ApiService
 import 'MenuItemWidget.dart'; // Asegúrate de tener este widget
+import 'package:biblioteca97/views/navegacionview/navegacion_screen.dart' as custom_nav; // Asegúrate del path correcto
 
 class AutoresScreen extends StatefulWidget {
   @override
@@ -147,6 +148,7 @@ class _AutoresScreenState extends State<AutoresScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Autores'),
+        backgroundColor: Colors.red,
         actions: [
           IconButton(
             icon: Icon(Icons.add),
@@ -161,19 +163,20 @@ class _AutoresScreenState extends State<AutoresScreen> {
           ),
         ],
       ),
+      drawer: const custom_nav.NavigationDrawer(), // Aquí reutilizas tu NavigationDrawer
       body: listaAutores.isEmpty
           ? Center(child: CircularProgressIndicator())
           : ListView.builder(
-        itemCount: listaAutores.length,
-        itemBuilder: (context, index) {
-          final autor = listaAutores[index];
-          return MenuItemWidget(
-            autor: autor,
-            onEdit: editarAutor,
-            onDelete: eliminarAutor,
-          );
-        },
-      ),
+              itemCount: listaAutores.length,
+              itemBuilder: (context, index) {
+                final autor = listaAutores[index];
+                return MenuItemWidget(
+                  autor: autor,
+                  onEdit: editarAutor,
+                  onDelete: eliminarAutor,
+                );
+              },
+            ),
     );
   }
 }

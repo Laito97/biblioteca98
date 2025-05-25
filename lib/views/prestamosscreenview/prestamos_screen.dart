@@ -1,8 +1,9 @@
-import 'package:biblioteca97/models/prestamo.dart';
 import 'package:flutter/material.dart';
+import 'package:biblioteca97/models/prestamo.dart';
 import 'package:biblioteca97/models_ant/data_prestamo.dart';
 import 'package:biblioteca97/services/api_service.dart';
 import 'PrestamoItemWidget.dart';
+import 'package:biblioteca97/views/navegacionview/navegacion_screen.dart' as custom_nav; // Asegúrate del path correcto
 
 class PrestamosScreen extends StatefulWidget {
   final ApiService apiService;
@@ -35,7 +36,9 @@ class _PrestamosScreenState extends State<PrestamosScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Préstamos'),
+        backgroundColor: Colors.red, // Puedes cambiar el color si es necesario
       ),
+      drawer: const custom_nav.NavigationDrawer(), // Aquí reutilizas tu NavigationDrawer
       body: FutureBuilder<List<Prestamo>>(
         future: _prestamosFuture,
         builder: (context, snapshot) {

@@ -1,17 +1,19 @@
 import 'package:flutter/material.dart';
-import 'MenuItemWidget.dart';
 
 class NavegacionScreen extends StatelessWidget {
   final String nombreUsuario;
 
   const NavegacionScreen({Key? key, required this.nombreUsuario})
-    : super(key: key);
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: const Text('Home'), backgroundColor: Colors.red),
-    drawer: const NavigationDrawer(),
-  );
+        appBar: AppBar(title: const Text('Home'), backgroundColor: Colors.red),
+        drawer: const NavigationDrawer(),
+        body: Center(
+          child: Text('Bienvenido, $nombreUsuario'),
+        ),
+      );
 }
 
 class NavigationDrawer extends StatelessWidget {
@@ -28,87 +30,90 @@ class NavigationDrawer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Drawer(
-    child: SingleChildScrollView(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: <Widget>[buildHeader(context), buildMenuItems(context)],
-      ),
-    ),
-  );
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: <Widget>[
+              buildHeader(context),
+              buildMenuItems(context),
+            ],
+          ),
+        ),
+      );
 
   Widget buildHeader(BuildContext context) => Material(
-    color: Colors.red,
-    child: InkWell(
-      onTap: () {},
-      child: Container(
-        padding: EdgeInsets.only(
-          top: 24 + MediaQuery.of(context).padding.top,
-          bottom: 24,
+        color: Colors.red,
+        child: InkWell(
+          onTap: () {},
+          child: Container(
+            padding: EdgeInsets.only(
+              top: 24 + MediaQuery.of(context).padding.top,
+              bottom: 24,
+            ),
+            child: Column(
+              children: const [
+                CircleAvatar(
+                  radius: 52,
+                  backgroundImage: NetworkImage(
+                    'https://cdn-icons-png.flaticon.com/512/3135/3135768.png',
+                  ),
+                ),
+                SizedBox(height: 12),
+                Text(
+                  'Juan Ruelas',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w500,
+                    fontSize: 20,
+                  ),
+                ),
+                Text(
+                  'ADMINISTRADOR',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w400,
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
-        child: Column(
-          children: const [
-            CircleAvatar(
-              radius: 52,
-              backgroundImage: NetworkImage(
-                'https://cdn-icons-png.flaticon.com/512/3135/3135768.png',
-              ),
-            ),
-            SizedBox(height: 12),
-            Text(
-              'Juan Ruelas',
-              style: TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.w500,
-                fontSize: 20,
-              ),
-            ),
-            Text(
-              'ADMINISTRADOR',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 12,
-                fontWeight: FontWeight.w400,
-              ),
-            ),
-          ],
-        ),
-      ),
-    ),
-  );
+      );
 
   Widget buildMenuItems(BuildContext context) => Wrap(
-    runSpacing: 4,
-    children: [
-      ...listaMenu.map(
-        (item) => ListTile(
-          leading: Icon(item['icon']),
-          title: Text(
-            item['title'],
-            style: TextStyle(fontWeight: FontWeight.w500, fontSize: 15),
+        runSpacing: 4,
+        children: [
+          ...listaMenu.map(
+            (item) => ListTile(
+              leading: Icon(item['icon']),
+              title: Text(
+                item['title'],
+                style: TextStyle(fontWeight: FontWeight.w500, fontSize: 15),
+              ),
+              onTap: () {
+                Navigator.pop(context); // Cierra el drawer si es necesario
+                _onMenuItemClick(item['title'], context);
+              },
+            ),
           ),
-          onTap: () {
-            Navigator.pop(context); // Cierra el drawer si es necesario
-            _onMenuItemClick(item['title'], context);
-          },
-        ),
-      ),
-      const Divider(color: Colors.black54),
-      ListTile(
-        leading: const Icon(Icons.settings),
-        title: const Text('Ajustes'),
-        onTap: () {
-          Navigator.pop(context);
-        },
-      ),
-      ListTile(
-        leading: const Icon(Icons.exit_to_app),
-        title: const Text('Cerrar sesión'),
-        onTap: () {
-          _cerrarSesion(context);
-        },
-      ),
-    ],
-  );
+          const Divider(color: Colors.black54),
+          ListTile(
+            leading: const Icon(Icons.home),
+            title: const Text('Home'),
+            onTap: () {
+              Navigator.pushNamedAndRemoveUntil(context, '/navegacion', (route) => false);
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.exit_to_app),
+            title: const Text('Cerrar sesión'),
+            onTap: () {
+              _cerrarSesion(context);
+            },
+          ),
+        ],
+      );
 
   void _onMenuItemClick(String menu, BuildContext context) {
     switch (menu.toLowerCase()) {
@@ -137,6 +142,7 @@ class NavigationDrawer extends StatelessWidget {
     Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
   }
 }
+
 
 // class _NavegacionScreenState extends State<NavegacionScreen> {
 //   List<Map<String, dynamic>> listaMenu = [

@@ -12,8 +12,8 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final _usuarioController = TextEditingController(text: 'jruelasrojas');
-  final _contrasenaController = TextEditingController(text: '123');
+  final _usuarioController = TextEditingController(text: 'jreategui');
+  final _contrasenaController = TextEditingController(text: '123456');
   final _formKey = GlobalKey<FormState>();
   final ApiService apiService = ApiService(client: ApiClient());
 
