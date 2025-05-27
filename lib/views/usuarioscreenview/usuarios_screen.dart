@@ -41,32 +41,6 @@ class _UsuariosScreenState extends State<UsuariosScreen> {
     }
   }
 
-  void _showAddUpdateDialog() {
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: Text(isEditing ? 'Editar Autor' : 'Agregar Autor'),
-          content: _buildForm(),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: Text('Cancelar'),
-            ),
-            TextButton(
-              onPressed: () {
-              //  isEditing ? _updateAutor() : _addAutor();
-              },
-              child: Text(isEditing ? 'Actualizar' : 'Agregar'),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
   Widget _buildForm() {
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -89,6 +63,7 @@ class _UsuariosScreenState extends State<UsuariosScreen> {
     );
   }
 
+  
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -104,7 +79,7 @@ class _UsuariosScreenState extends State<UsuariosScreen> {
                 nomController.clear();
                 contrasenaController.clear();
               });
-              _showAddUpdateDialog();
+             // _showAddUpdateDialog();
             },
           ),
         ],
@@ -124,20 +99,19 @@ class _UsuariosScreenState extends State<UsuariosScreen> {
             ),
           ),
           Expanded(
-            child:
-                usuariosFiltrados.isEmpty
-                    ? Center(child: Text('No se encontraron usuarios'))
-                    : ListView.builder(
-                      itemCount: usuariosFiltrados.length,
-                      itemBuilder: (context, index) {
-                        final usuario = usuariosFiltrados[index];
-                        return MenuItemWidget(
-                          usuario: usuario,
-                          // onEdit: editarUsuario,
-                          // onDelete: eliminarUsuario,
-                        );
-                      },
-                    ),
+            child: usuariosFiltrados.isEmpty
+                ? Center(child: Text('No se encontraron usuarios'))
+                : ListView.builder(
+              itemCount: usuariosFiltrados.length,
+              itemBuilder: (context, index) {
+                final usuario = usuariosFiltrados[index];
+                return MenuItemWidget(
+                  usuario: usuario,
+                 // onEdit: editarUsuario,
+                 // onDelete: eliminarUsuario,
+                );
+              },
+            ),
           ),
         ],
       ),
