@@ -1,11 +1,12 @@
-import 'dart:ffi';
-
-import 'package:biblioteca97/models/usuario.dart';
 import 'package:flutter/material.dart';
-import '../../models_ant/data_usuario.dart';
+import 'package:biblioteca97/models/usuario.dart';
 import '../../services/api_client.dart';
 import '../../services/api_service.dart';
 import 'MenuItemWidget.dart';
+import 'package:biblioteca97/views/navegacionview/navegacion_screen.dart'
+    as custom_nav;
+import 'usuarios_register_screen.dart';
+
 
 class UsuariosScreen extends StatefulWidget {
   @override
@@ -41,6 +42,30 @@ class _UsuariosScreenState extends State<UsuariosScreen> {
     }
   }
 
+  void _showAddUpdateDialog() {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text(isEditing ? 'Editar Usuario' : 'Agregar Usuario'),
+          content: _buildForm(),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text('Cancelar'),
+            ),
+            TextButton(
+              onPressed: () {
+                // isEditing ? _updateUsuario() : _addUsuario();
+              },
+              child: Text(isEditing ? 'Actualizar' : 'Agregar'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   Widget _buildForm() {
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -69,21 +94,22 @@ class _UsuariosScreenState extends State<UsuariosScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Usuarios'),
+        backgroundColor: Colors.red,
         actions: [
           IconButton(
             icon: Icon(Icons.add),
             onPressed: () {
-              setState(() {
-                isEditing = false;
-                idController.clear();
-                nomController.clear();
-                contrasenaController.clear();
-              });
-             // _showAddUpdateDialog();
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const RegisterScreen(),
+                ),
+              );
             },
           ),
         ],
       ),
+      drawer: const custom_nav.NavigationDrawer(), // Se usa tu Drawer
       body: Column(
         children: [
           Padding(
@@ -95,7 +121,7 @@ class _UsuariosScreenState extends State<UsuariosScreen> {
                 prefixIcon: Icon(Icons.search),
                 border: OutlineInputBorder(),
               ),
-              //onChanged: _filtrarUsuarios,
+              // onChanged: _filtrarUsuarios,
             ),
           ),
           Expanded(

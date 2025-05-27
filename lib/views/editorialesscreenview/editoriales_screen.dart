@@ -4,6 +4,7 @@ import '../../models_ant/data_editorial.dart';
 import '../../services/api_client.dart';
 import '../../services/api_service.dart';
 import 'MenuItemWidget.dart';
+import 'package:biblioteca97/views/navegacionview/navegacion_screen.dart' as custom_nav; // Asegúrate de tener el path correcto
 
 class EditorialesScreen extends StatefulWidget {
   @override
@@ -28,16 +29,15 @@ class _EditorialesScreenState extends State<EditorialesScreen> {
   }
 
   // Obtener editoriales desde la API
-Future<void> _fetchEditoriales() async {
-  try {
-    listaEditoriales = await _apiService.listEditorialesV2();
-    print("Editoriales recibidas: ${listaEditoriales.length}");
-    setState(() {});
-  } catch (e) {
-    print("Error al obtener editoriales: $e");
+  Future<void> _fetchEditoriales() async {
+    try {
+      listaEditoriales = await _apiService.listEditorialesV2();
+      print("Editoriales recibidas: ${listaEditoriales.length}");
+      setState(() {});
+    } catch (e) {
+      print("Error al obtener editoriales: $e");
+    }
   }
-}
-
 
   // Mostrar diálogo de agregar/editar
   void _showAddUpdateDialog() {
@@ -121,19 +121,19 @@ Future<void> _fetchEditoriales() async {
   }
 
   // Eliminar una editorial
-void _deleteEditorial(DataEditorial editorial) async {
-  print('Eliminando editorial: ${editorial.nomEditorial}');
-  try {
-    final result = await _apiService.deleteEditorial(editorial.idEditorial);
-    if (result) {
-      _fetchEditoriales(); // Actualizamos la lista
-    } else {
-      print("Error al eliminar editorial.");
+  void _deleteEditorial(DataEditorial editorial) async {
+    print('Eliminando editorial: ${editorial.nomEditorial}');
+    try {
+      final result = await _apiService.deleteEditorial(editorial.idEditorial);
+      if (result) {
+        _fetchEditoriales(); // Actualizamos la lista
+      } else {
+        print("Error al eliminar editorial.");
+      }
+    } catch (e) {
+      print("Error al eliminar editorial: $e");
     }
-  } catch (e) {
-    print("Error al eliminar editorial: $e");
   }
-}
 
   // Vista principal
   @override
@@ -141,6 +141,7 @@ void _deleteEditorial(DataEditorial editorial) async {
     return Scaffold(
       appBar: AppBar(
         title: Text('Editoriales'),
+        backgroundColor: Colors.red,  // Asegúrate de que el color sea rojo siempre
         actions: [
           IconButton(
             icon: Icon(Icons.add),
@@ -155,8 +156,9 @@ void _deleteEditorial(DataEditorial editorial) async {
           ),
         ],
       ),
+      drawer: const custom_nav.NavigationDrawer(), // Agregado el NavigationDrawer aquí
       body: listaEditoriales.isEmpty
-          ? Center(child: CircularProgressIndicator())
+          ? Center(child: CircularProgressIndicator()) // Mostramos un loader mientras cargan las editoriales
           : ListView.builder(
               itemCount: listaEditoriales.length,
               itemBuilder: (context, index) {
@@ -164,7 +166,7 @@ void _deleteEditorial(DataEditorial editorial) async {
                 return MenuItemWidget(
                   editorial: editorial,
                   onEdit: _editEditorial,
-                  onDelete:_deleteEditorial,
+                  onDelete: _deleteEditorial,
                 );
               },
             ),

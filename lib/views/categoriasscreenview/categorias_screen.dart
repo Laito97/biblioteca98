@@ -1,9 +1,10 @@
-import 'package:biblioteca97/models/categoria.dart';
 import 'package:flutter/material.dart';
+import 'package:biblioteca97/models/categoria.dart';
 import '../../models_ant/data_categoria.dart';
 import '../../services/api_client.dart';
 import '../../services/api_service.dart'; // Asegúrate de importar ApiService
 import 'MenuItemWidget.dart'; // Asegúrate de tener este widget para categorías
+import 'package:biblioteca97/views/navegacionview/navegacion_screen.dart' as custom_nav; // Asegúrate del path correcto
 
 class CategoriaScreen extends StatefulWidget {
   @override
@@ -146,6 +147,7 @@ class _CategoriaScreenState extends State<CategoriaScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Categorías'),
+        backgroundColor: Colors.red,  // Asegúrate de que el color sea rojo siempre
         actions: [
           IconButton(
             icon: Icon(Icons.add),
@@ -160,19 +162,20 @@ class _CategoriaScreenState extends State<CategoriaScreen> {
           ),
         ],
       ),
+      drawer: const custom_nav.NavigationDrawer(), // Aquí reutilizas tu NavigationDrawer
       body: listaCategorias.isEmpty
           ? Center(child: CircularProgressIndicator()) // Mostramos un loader mientras cargan las categorías
           : ListView.builder(
-        itemCount: listaCategorias.length,
-        itemBuilder: (context, index) {
-          final categoria = listaCategorias[index];
-          return MenuItemWidget(
-            categoria: categoria,
-            onEdit: editarCategoria,
-            onDelete: eliminarCategoria,
-          );
-        },
-      ),
+              itemCount: listaCategorias.length,
+              itemBuilder: (context, index) {
+                final categoria = listaCategorias[index];
+                return MenuItemWidget(
+                  categoria: categoria,
+                  onEdit: editarCategoria,
+                  onDelete: eliminarCategoria,
+                );
+              },
+            ),
     );
   }
 }
