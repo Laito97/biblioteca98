@@ -1,3 +1,4 @@
+import 'package:biblioteca97/views/navegacionview/navegacion_drawer.dart';
 import 'package:flutter/material.dart';
 import 'package:biblioteca97/models/usuario.dart';
 import '../../services/api_client.dart';
@@ -88,6 +89,7 @@ class _UsuariosScreenState extends State<UsuariosScreen> {
     );
   }
 
+  
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -108,7 +110,7 @@ class _UsuariosScreenState extends State<UsuariosScreen> {
           ),
         ],
       ),
-      drawer: const custom_nav.NavigationDrawer(), // Se usa tu Drawer
+      drawer: NavegacionDrawer(), // Se usa tu Drawer
       body: Column(
         children: [
           Padding(
@@ -124,20 +126,19 @@ class _UsuariosScreenState extends State<UsuariosScreen> {
             ),
           ),
           Expanded(
-            child:
-                usuariosFiltrados.isEmpty
-                    ? Center(child: Text('No se encontraron usuarios'))
-                    : ListView.builder(
-                      itemCount: usuariosFiltrados.length,
-                      itemBuilder: (context, index) {
-                        final usuario = usuariosFiltrados[index];
-                        return MenuItemWidget(
-                          usuario: usuario,
-                          // onEdit: editarUsuario,
-                          // onDelete: eliminarUsuario,
-                        );
-                      },
-                    ),
+            child: usuariosFiltrados.isEmpty
+                ? Center(child: Text('No se encontraron usuarios'))
+                : ListView.builder(
+              itemCount: usuariosFiltrados.length,
+              itemBuilder: (context, index) {
+                final usuario = usuariosFiltrados[index];
+                return MenuItemWidget(
+                  usuario: usuario,
+                 // onEdit: editarUsuario,
+                 // onDelete: eliminarUsuario,
+                );
+              },
+            ),
           ),
         ],
       ),

@@ -1,5 +1,7 @@
 import 'package:biblioteca97/models/libro.dart';
+import 'package:biblioteca97/views/navegacionview/navegacion_drawer.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../models_ant/data_libro.dart';
 import '../../services/api_client.dart';
 import '../../services/api_service.dart';
@@ -8,9 +10,7 @@ import 'package:biblioteca97/views/navegacionview/navegacion_screen.dart' as cus
 import 'package:biblioteca97/views/librosscreenview/registrar_libro_screen.dart'; // Importa la pantalla de registro
 
 class LibrosScreen extends StatefulWidget {
-  final ApiService apiService;
-
-  LibrosScreen({required this.apiService});
+  const LibrosScreen({super.key});
 
   @override
   _LibrosScreenState createState() => _LibrosScreenState();
@@ -21,6 +21,12 @@ class _LibrosScreenState extends State<LibrosScreen> {
   List<Libro> listaLibros = [];
 
   TextEditingController searchController = TextEditingController();
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _apiService = Provider.of<ApiService>(context, listen: false);
+  }
 
   @override
   void initState() {
@@ -64,39 +70,43 @@ class _LibrosScreenState extends State<LibrosScreen> {
   void _onDeleteLibro(DataLibro libro) async {
     final confirm = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text("Confirmar eliminación"),
-        content: Text("¿Estás seguro de eliminar '${libro.nomLibro}'?"),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: Text("Cancelar"),
+      builder:
+          (context) => AlertDialog(
+            title: Text("Confirmar eliminación"),
+            content: Text("¿Estás seguro de eliminar '${libro.nomLibro}'?"),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: Text("Cancelar"),
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(context, true),
+                child: Text("Eliminar"),
+              ),
+            ],
           ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: Text("Eliminar"),
-          ),
-        ],
-      ),
     );
 
     if (confirm == true) {
       final success = await _apiService.deleteLibro(libro.isbn);
       if (success) {
         _fetchLibros();
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Libro eliminado")));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text("Libro eliminado")));
       }
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final librosFiltrados = listaLibros.where((libro) {
-      final filtro = searchController.text.toLowerCase();
-      final nombreAutor = libro.autor?.autor_nom?.toLowerCase() ?? '';
-      final nombreLibro = libro.libro_nom?.toLowerCase() ?? '';
-      return nombreLibro.contains(filtro) || nombreAutor.contains(filtro);
-    }).toList();
+    final librosFiltrados =
+        listaLibros.where((libro) {
+          final filtro = searchController.text.toLowerCase();
+          final nombreAutor = libro.autor?.autor_nom?.toLowerCase() ?? '';
+          final nombreLibro = libro.libro_nom?.toLowerCase() ?? '';
+          return nombreLibro.contains(filtro) || nombreAutor.contains(filtro);
+        }).toList();
 
     return Scaffold(
       appBar: AppBar(
@@ -106,7 +116,7 @@ class _LibrosScreenState extends State<LibrosScreen> {
           IconButton(icon: Icon(Icons.add), onPressed: _onAddLibro),
         ],
       ),
-      drawer: const custom_nav.NavigationDrawer(),
+      drawer: NavegacionDrawer(),
       body: Column(
         children: [
           Padding(
@@ -121,20 +131,21 @@ class _LibrosScreenState extends State<LibrosScreen> {
             ),
           ),
           Expanded(
-            child: librosFiltrados.isEmpty
-                ? Center(child: Text("No hay libros disponibles"))
-                : ListView.builder(
-                    itemCount: librosFiltrados.length,
-                    itemBuilder: (context, index) {
-                      final libro = librosFiltrados[index];
-                      return LibroItemWidget(
-                        libro: libro,
-                        onEdit: _onEditLibro,
-                        onDelete: _onDeleteLibro,
-                        onPrestar: _onPrestar,
-                      );
-                    },
-                  ),
+            child:
+                librosFiltrados.isEmpty
+                    ? Center(child: Text("No hay libros disponibles"))
+                    : ListView.builder(
+                      itemCount: librosFiltrados.length,
+                      itemBuilder: (context, index) {
+                        final libro = librosFiltrados[index];
+                        return LibroItemWidget(
+                          libro: libro,
+                          onEdit: _onEditLibro,
+                          onDelete: _onDeleteLibro,
+                          onPrestar: _onPrestar,
+                        );
+                      },
+                    ),
           ),
         ],
       ),
@@ -147,10 +158,14 @@ class _LibrosScreenState extends State<LibrosScreen> {
       final success = await _apiService.updateLibro(libro);
       if (success) {
         _fetchLibros();
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Libro prestado")));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text("Libro prestado")));
       }
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("No hay existencias disponibles")));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("No hay existencias disponibles")));
     }
   }
 }

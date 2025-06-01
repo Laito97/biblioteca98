@@ -1,4 +1,5 @@
 import 'package:biblioteca97/models/editorial.dart';
+import 'package:biblioteca97/views/navegacionview/navegacion_drawer.dart';
 import 'package:flutter/material.dart';
 import '../../models_ant/data_editorial.dart';
 import '../../services/api_client.dart';
@@ -165,7 +166,7 @@ void _filterEditoriales(String query) {
           ),
         ],
       ),
-      drawer: const custom_nav.NavigationDrawer(),
+      drawer: NavegacionDrawer(),
       body: Column(
         children: [
           Padding(

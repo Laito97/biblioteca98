@@ -1,3 +1,4 @@
+import 'package:biblioteca97/views/navegacionview/navegacion_drawer.dart';
 import 'package:flutter/material.dart';
 import 'package:biblioteca97/models/autor.dart';
 import '../../models_ant/data_autor.dart';
@@ -173,7 +174,7 @@ class _AutoresScreenState extends State<AutoresScreen> {
           ),
         ],
       ),
-      drawer: const custom_nav.NavigationDrawer(),
+      drawer: NavegacionDrawer(),
       body: Column(
         children: [
           Padding(

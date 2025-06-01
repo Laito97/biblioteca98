@@ -1,4 +1,11 @@
+import 'package:biblioteca97/models/persona.dart';
+import 'package:biblioteca97/models/tipo_usuario.dart';
+import 'package:biblioteca97/models/usuario.dart';
+import 'package:biblioteca97/services/api_service.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import '../../services/api_client.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({Key? key}) : super(key: key);
@@ -9,6 +16,7 @@ class RegisterScreen extends StatefulWidget {
 
 class _RegisterScreenState extends State<RegisterScreen> {
   final _formKey = GlobalKey<FormState>();
+  late ApiService _apiService;
 
   final TextEditingController _nombresController = TextEditingController();
   final TextEditingController _apellidosController = TextEditingController();
@@ -23,9 +31,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
   String? _selectedRole;
 
   @override
+  void initState() {
+    super.initState();
+    _apiService = ApiService(client: ApiClient());
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
       appBar: AppBar(
         title: const Text("Registro"),
         leading: IconButton(
@@ -44,21 +57,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
           child: Form(
             key: _formKey,
             child: Column(
-              mainAxisSize: MainAxisSize.min,
               children: [
                 Image.asset(
                   'assets/agregar_usuario.png',
                   width: 200,
                   height: 120,
-                ),
-                const SizedBox(height: 10),
-                const Text(
-                  "Registro de Usuario",
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: Color.fromARGB(221, 19, 19, 19),
-                  ),
                 ),
                 const SizedBox(height: 30),
 
@@ -107,38 +110,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 ),
                 const SizedBox(height: 10),
 
-                // Dropdown: Rol de usuario
-                DropdownButtonFormField<String>(
-                  value: _selectedRole,
-                  items: const [
-                    DropdownMenuItem(
-                      value: 'Administrador',
-                      child: Text('Administrador'),
-                    ),
-                    DropdownMenuItem(
-                      value: 'Usuario',
-                      child: Text('Usuario'),
-                    ),
-                  ],
-                  onChanged: (value) {
-                    setState(() {
-                      _selectedRole = value;
-                    });
-                  },
-                  decoration: InputDecoration(
-                    hintText: 'Seleccionar rol',
-                    filled: true,
-                    fillColor: const Color(0xFFF6F6F6),
-                    prefixIcon: const Icon(Icons.people),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(30),
-                      borderSide: BorderSide.none,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 10),
-
-                // CONTRASEÑA
                 TextFormField(
                   controller: _passwordController,
                   obscureText: !isPasswordVisible,
@@ -168,7 +139,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                 const SizedBox(height: 30),
 
-                // BOTÓN REGISTRARSE
                 SizedBox(
                   width: double.infinity,
                   height: 50,
@@ -180,19 +150,46 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         borderRadius: BorderRadius.circular(32),
                       ),
                     ),
-                    onPressed: () {
+                    onPressed: () async {
                       if (_formKey.currentState!.validate()) {
-                        // Aquí podrías procesar el registro
-                        debugPrint('Rol seleccionado: $_selectedRole');
+                        final persona = Persona(
+                          nombres: _nombresController.text,
+                          apellidos: _apellidosController.text,
+                          numContacto:
+                              int.tryParse(_telefonoController.text) ?? 0,
+                          correo: _correoController.text,
+                          dni: _dniController.text,
+                          direccion: _direccionController.text,
+                        );
+
+                        final tipoUsuario = TipoUsuario(id: 2);
+
+                        final usuario = Usuario(
+                          usuarioId: 0,
+                          persona: persona,
+                          tipoUsuario: tipoUsuario,
+                          password: _passwordController.text,
+                        );
+
+                        try {
+                          bool registrado = await _apiService
+                              .registrarUsuarioV2(usuario);
+                          _showDialog(
+                            registrado
+                                ? "Usuario registrado con éxito"
+                                : "No se pudo registrar el usuario",
+                          );
+                        } catch (e) {
+                          _showDialog("Error: $e");
+                        }
                       }
                     },
                     child: const Text(
-                      'REGISTRARSE',
+                      'Registrar',
                       style: TextStyle(fontWeight: FontWeight.bold),
                     ),
                   ),
                 ),
-
                 const SizedBox(height: 20),
               ],
             ),
@@ -222,5 +219,37 @@ class _RegisterScreenState extends State<RegisterScreen> {
         ),
       ),
     );
+  }
+
+  void _showDialog(String message) {
+    showDialog(
+      context: context,
+      builder:
+          (_) => AlertDialog(
+            title: const Text("Resultado"),
+            content: Text(message),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                  if (message.contains("registrado con éxito")) {
+                    _limpiarFormulario();
+                  }
+                },
+                child: const Text("OK"),
+              ),
+            ],
+          ),
+    );
+  }
+
+  void _limpiarFormulario() {
+    _nombresController.clear();
+    _apellidosController.clear();
+    _correoController.clear();
+    _telefonoController.clear();
+    _dniController.clear();
+    _direccionController.clear();
+    _passwordController.clear();
   }
 }

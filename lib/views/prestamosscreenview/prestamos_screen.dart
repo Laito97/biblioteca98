@@ -1,14 +1,15 @@
+import 'package:biblioteca97/services/api_client.dart';
+import 'package:biblioteca97/views/navegacionview/navegacion_drawer.dart';
 import 'package:flutter/material.dart';
 import 'package:biblioteca97/models/prestamo.dart';
 import 'package:biblioteca97/models_ant/data_prestamo.dart';
 import 'package:biblioteca97/services/api_service.dart';
+import 'package:provider/provider.dart';
 import 'PrestamoItemWidget.dart';
 import 'package:biblioteca97/views/navegacionview/navegacion_screen.dart' as custom_nav;
 
 class PrestamosScreen extends StatefulWidget {
-  final ApiService apiService;
-
-  PrestamosScreen({required this.apiService});
+  const PrestamosScreen({super.key});
 
   @override
   _PrestamosScreenState createState() => _PrestamosScreenState();
@@ -23,9 +24,15 @@ class _PrestamosScreenState extends State<PrestamosScreen> {
   bool hasError = false;
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _apiService = Provider.of<ApiService>(context, listen: false);
+  }
+  
+  @override
   void initState() {
     super.initState();
-    _apiService = widget.apiService;
+    _apiService = ApiService(client: ApiClient());
     _fetchPrestamos();
   }
 
@@ -101,7 +108,7 @@ void _filterPrestamos(String query) {
         title: Text('Préstamos'),
         backgroundColor: Colors.red,
       ),
-      drawer: const custom_nav.NavigationDrawer(),
+      drawer: NavegacionDrawer(),
       body: isLoading
           ? Center(child: CircularProgressIndicator())
           : hasError

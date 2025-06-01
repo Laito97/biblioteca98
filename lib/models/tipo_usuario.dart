@@ -1,10 +1,10 @@
 class TipoUsuario {
-  final int id;
-  final String nombre;
+  final int? id;
+  final String? nombre;
 
   TipoUsuario({
-    required this.id,
-    required this.nombre,
+     this.id,
+     this.nombre,
   });
 
   factory TipoUsuario.fromJson(Map<String, dynamic> json) {
@@ -12,5 +12,13 @@ class TipoUsuario {
       id: json['usuario_tipo_id'] ?? 0,
       nombre: json['tipo_nom'] ?? '',
     );
+  }
+
+  
+  Map<String, dynamic> toJson() {
+    return {
+      "id": id,
+      "nombre" : nombre
+      };
   }
 }
