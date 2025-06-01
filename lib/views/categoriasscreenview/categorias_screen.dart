@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:biblioteca97/models/categoria.dart';
 import '../../models_ant/data_categoria.dart';
 import '../../services/api_client.dart';
-import '../../services/api_service.dart'; // Asegúrate de importar ApiService
-import 'MenuItemWidget.dart'; // Asegúrate de tener este widget para categorías
-import 'package:biblioteca97/views/navegacionview/navegacion_screen.dart' as custom_nav; // Asegúrate del path correcto
+import '../../services/api_service.dart';
+import 'MenuItemWidget.dart';
+import 'package:biblioteca97/views/navegacionview/navegacion_screen.dart' as custom_nav;
+import 'categoria_register_screen.dart';
 
 class CategoriaScreen extends StatefulWidget {
   @override
@@ -14,12 +15,14 @@ class CategoriaScreen extends StatefulWidget {
 class _CategoriaScreenState extends State<CategoriaScreen> {
   late ApiService _apiService;
   List<Categoria> listaCategorias = [];
-  bool isEditing = false; // Para saber si estamos en modo edición
-  late DataCategoria categoriaEditando; // Para almacenar la categoría que estamos editando
+  List<Categoria> filteredCategorias = [];
 
-  // Controladores para el formulario
+  bool isEditing = false;
+  late DataCategoria categoriaEditando;
+
   TextEditingController idController = TextEditingController();
   TextEditingController nomController = TextEditingController();
+  TextEditingController searchController = TextEditingController();
 
   @override
   void initState() {
@@ -28,34 +31,44 @@ class _CategoriaScreenState extends State<CategoriaScreen> {
     _fetchCategorias();
   }
 
-  // Fetch de categorías desde la API
   Future<void> _fetchCategorias() async {
     try {
       listaCategorias = await _apiService.listCategoriasV2();
-      setState(() {}); // Actualizamos el estado para que se muestre la lista
+      filteredCategorias = listaCategorias;
+      setState(() {});
     } catch (e) {
       print("Error al obtener categorías: $e");
     }
   }
 
-  // Método para editar categoría
+  void _filterCategorias(String query) {
+    final resultados = listaCategorias.where((categoria) {
+      return (categoria.categoria_nom ?? '')
+          .toLowerCase()
+          .contains(query.toLowerCase());
+    }).toList();
+
+    setState(() {
+      filteredCategorias = resultados;
+    });
+  }
+
   void editarCategoria(DataCategoria categoria) {
     setState(() {
       isEditing = true;
-      categoriaEditando = categoria; // Guardamos la categoría que vamos a editar
+      categoriaEditando = categoria;
       idController.text = categoria.idCategoria;
       nomController.text = categoria.nomCategoria;
     });
     _showAddUpdateDialog();
   }
 
-  // Método para eliminar categoría
   void eliminarCategoria(DataCategoria categoria) async {
     print('Eliminando categoría: ${categoria.nomCategoria}');
     try {
       bool result = await _apiService.deleteCategoria(categoria.idCategoria);
       if (result) {
-        _fetchCategorias(); // Actualizamos la lista
+        _fetchCategorias();
       } else {
         print("Error al eliminar categoría.");
       }
@@ -64,7 +77,6 @@ class _CategoriaScreenState extends State<CategoriaScreen> {
     }
   }
 
-  // Método para mostrar el dialog de agregar/editar categoría
   void _showAddUpdateDialog() {
     showDialog(
       context: context,
@@ -74,9 +86,7 @@ class _CategoriaScreenState extends State<CategoriaScreen> {
           content: _buildForm(),
           actions: <Widget>[
             TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
+              onPressed: () => Navigator.of(context).pop(),
               child: Text('Cancelar'),
             ),
             TextButton(
@@ -91,7 +101,6 @@ class _CategoriaScreenState extends State<CategoriaScreen> {
     );
   }
 
-  // Formulario de agregar/editar categoría
   Widget _buildForm() {
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -99,7 +108,7 @@ class _CategoriaScreenState extends State<CategoriaScreen> {
         TextField(
           controller: idController,
           decoration: InputDecoration(labelText: 'ID Categoría'),
-          readOnly: isEditing, // Si estamos editando, no permitimos cambiar el ID
+          readOnly: isEditing,
         ),
         TextField(
           controller: nomController,
@@ -109,73 +118,90 @@ class _CategoriaScreenState extends State<CategoriaScreen> {
     );
   }
 
-  // Método para agregar una categoría
   Future<void> _addCategoria() async {
     final categoria = DataCategoria(
-      idCategoria: DateTime.now().millisecondsSinceEpoch.toString(), // Generar un ID temporal
+      idCategoria: DateTime.now().millisecondsSinceEpoch.toString(),
       nomCategoria: nomController.text,
     );
 
     try {
-      await _apiService.addCategoria(categoria); // Llamamos al servicio para agregar
-      _fetchCategorias(); // Actualizamos la lista
-      Navigator.of(context).pop(); // Cerramos el diálogo
+      await _apiService.addCategoria(categoria);
+      _fetchCategorias();
+      Navigator.of(context).pop();
     } catch (e) {
       print("Error al agregar categoría: $e");
     }
   }
 
-  // Método para actualizar una categoría
   Future<void> _updateCategoria() async {
     final categoria = DataCategoria(
       idCategoria: idController.text,
-      nomCategoria: nomController.text, // Usamos los datos del formulario
+      nomCategoria: nomController.text,
     );
 
     try {
-      await _apiService.updateCategoria(categoria); // Llamamos al servicio para actualizar
-      _fetchCategorias(); // Actualizamos la lista
-      Navigator.of(context).pop(); // Cerramos el diálogo
+      await _apiService.updateCategoria(categoria);
+      _fetchCategorias();
+      Navigator.of(context).pop();
     } catch (e) {
       print("Error al actualizar categoría: $e");
     }
   }
 
-  // Método para mostrar las categorías en pantalla
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text('Categorías'),
-        backgroundColor: Colors.red,  // Asegúrate de que el color sea rojo siempre
+        backgroundColor: Colors.red,
         actions: [
           IconButton(
             icon: Icon(Icons.add),
             onPressed: () {
-              setState(() {
-                isEditing = false;
-                idController.clear();
-                nomController.clear();
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const CategoriaRegisterScreen(),
+                ),
+              ).then((_) {
+                _fetchCategorias();
               });
-              _showAddUpdateDialog();
             },
           ),
         ],
       ),
-      drawer: const custom_nav.NavigationDrawer(), // Aquí reutilizas tu NavigationDrawer
-      body: listaCategorias.isEmpty
-          ? Center(child: CircularProgressIndicator()) // Mostramos un loader mientras cargan las categorías
-          : ListView.builder(
-              itemCount: listaCategorias.length,
-              itemBuilder: (context, index) {
-                final categoria = listaCategorias[index];
-                return MenuItemWidget(
-                  categoria: categoria,
-                  onEdit: editarCategoria,
-                  onDelete: eliminarCategoria,
-                );
-              },
+      drawer: const custom_nav.NavigationDrawer(),
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: TextField(
+              controller: searchController,
+              decoration: InputDecoration(
+                labelText: 'Buscar Categoría',
+                prefixIcon: Icon(Icons.search),
+                border: OutlineInputBorder(),
+              ),
+              onChanged: _filterCategorias,
             ),
+          ),
+          Expanded(
+            child: filteredCategorias.isEmpty
+                ? Center(child: Text('No se encontraron resultados'))
+                : ListView.builder(
+                    itemCount: filteredCategorias.length,
+                    itemBuilder: (context, index) {
+                      final categoria = filteredCategorias[index];
+                      return MenuItemWidget(
+                        categoria: categoria,
+                        onEdit: editarCategoria,
+                        onDelete: eliminarCategoria,
+                      );
+                    },
+                  ),
+          ),
+        ],
+      ),
     );
   }
 }

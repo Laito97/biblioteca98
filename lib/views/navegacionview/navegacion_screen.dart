@@ -60,7 +60,7 @@ class NavigationDrawer extends StatelessWidget {
                 ),
                 SizedBox(height: 12),
                 Text(
-                  'Juan Ruelas',
+                  'Jean Reategui',
                   style: TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.w500,

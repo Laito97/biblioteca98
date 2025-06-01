@@ -5,6 +5,8 @@ import 'dart:convert';
 class ApiClient {
  final String host = 'http://192.168.1.16:3000/api/biblioteca_v1';  // Base de la API
   //final String host = 'http://192.168.18.38:3000/api/biblioteca_v1';
+  //final String host = 'http://10.83.9.47:3000/api/biblioteca_v1';
+
 
   // Petición GET genérica
   Future<Map<String, dynamic>> get(String endpoint) async {

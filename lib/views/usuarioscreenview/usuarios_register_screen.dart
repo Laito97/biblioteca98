@@ -20,10 +20,24 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   bool isPasswordVisible = false;
 
+  String? _selectedRole;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
+      appBar: AppBar(
+        title: const Text("Registro"),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            Navigator.pop(context); // Regresa a la pantalla anterior
+          },
+        ),
+        backgroundColor: Colors.red,
+        foregroundColor: Colors.white,
+        elevation: 0,
+      ),
       body: Center(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
@@ -93,6 +107,37 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 ),
                 const SizedBox(height: 10),
 
+                // Dropdown: Rol de usuario
+                DropdownButtonFormField<String>(
+                  value: _selectedRole,
+                  items: const [
+                    DropdownMenuItem(
+                      value: 'Administrador',
+                      child: Text('Administrador'),
+                    ),
+                    DropdownMenuItem(
+                      value: 'Usuario',
+                      child: Text('Usuario'),
+                    ),
+                  ],
+                  onChanged: (value) {
+                    setState(() {
+                      _selectedRole = value;
+                    });
+                  },
+                  decoration: InputDecoration(
+                    hintText: 'Seleccionar rol',
+                    filled: true,
+                    fillColor: const Color(0xFFF6F6F6),
+                    prefixIcon: const Icon(Icons.people),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(30),
+                      borderSide: BorderSide.none,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 10),
+
                 // CONTRASEÑA
                 TextFormField(
                   controller: _passwordController,
@@ -137,7 +182,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     ),
                     onPressed: () {
                       if (_formKey.currentState!.validate()) {
-                        // Acción de registro futura
+                        // Aquí podrías procesar el registro
+                        debugPrint('Rol seleccionado: $_selectedRole');
                       }
                     },
                     child: const Text(

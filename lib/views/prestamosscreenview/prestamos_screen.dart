@@ -3,7 +3,7 @@ import 'package:biblioteca97/models/prestamo.dart';
 import 'package:biblioteca97/models_ant/data_prestamo.dart';
 import 'package:biblioteca97/services/api_service.dart';
 import 'PrestamoItemWidget.dart';
-import 'package:biblioteca97/views/navegacionview/navegacion_screen.dart' as custom_nav; // Asegúrate del path correcto
+import 'package:biblioteca97/views/navegacionview/navegacion_screen.dart' as custom_nav;
 
 class PrestamosScreen extends StatefulWidget {
   final ApiService apiService;
@@ -16,7 +16,11 @@ class PrestamosScreen extends StatefulWidget {
 
 class _PrestamosScreenState extends State<PrestamosScreen> {
   late ApiService _apiService;
-  late Future<List<Prestamo>> _prestamosFuture;
+  List<Prestamo> prestamos = [];
+  List<Prestamo> filteredPrestamos = [];
+  TextEditingController searchController = TextEditingController();
+  bool isLoading = true;
+  bool hasError = false;
 
   @override
   void initState() {
@@ -27,44 +31,34 @@ class _PrestamosScreenState extends State<PrestamosScreen> {
 
   Future<void> _fetchPrestamos() async {
     setState(() {
-      _prestamosFuture = _apiService.listPrestamosV2();
+      isLoading = true;
+      hasError = false;
     });
+    try {
+      prestamos = await _apiService.listPrestamosV2();
+      filteredPrestamos = prestamos;
+      setState(() {
+        isLoading = false;
+      });
+    } catch (e) {
+      print("Error al obtener préstamos: $e");
+      setState(() {
+        isLoading = false;
+        hasError = true;
+      });
+    }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Préstamos'),
-        backgroundColor: Colors.red, // Puedes cambiar el color si es necesario
-      ),
-      drawer: const custom_nav.NavigationDrawer(), // Aquí reutilizas tu NavigationDrawer
-      body: FutureBuilder<List<Prestamo>>(
-        future: _prestamosFuture,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(child: CircularProgressIndicator());
-          } else if (snapshot.hasError) {
-            return Center(child: Text('Error al cargar los préstamos.'));
-          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return Center(child: Text('No hay préstamos disponibles.'));
-          } else {
-            List<Prestamo> prestamos = snapshot.data!;
-            return ListView.builder(
-              itemCount: prestamos.length,
-              itemBuilder: (context, index) {
-                final prestamo = prestamos[index];
-                return PrestamoItemWidget(
-                  prestamo: prestamo,
-                  onDelete: _onDeletePrestamo,
-                );
-              },
-            );
-          }
-        },
-      ),
-    );
-  }
+void _filterPrestamos(String query) {
+  final resultados = prestamos.where((prestamo) {
+    final id = prestamo.prestamo_id?.toString() ?? '';
+    return id.toLowerCase().contains(query.toLowerCase());
+  }).toList();
+
+  setState(() {
+    filteredPrestamos = resultados;
+  });
+}
 
   void _onDeletePrestamo(DataPrestamo prestamo) async {
     final confirm = await showDialog<bool>(
@@ -88,7 +82,7 @@ class _PrestamosScreenState extends State<PrestamosScreen> {
     if (confirm == true) {
       final success = await _apiService.deletePrestamo(prestamo.idPrestamo);
       if (success) {
-        _fetchPrestamos();
+        await _fetchPrestamos();
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Préstamo eliminado')),
         );
@@ -98,5 +92,50 @@ class _PrestamosScreenState extends State<PrestamosScreen> {
         );
       }
     }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Préstamos'),
+        backgroundColor: Colors.red,
+      ),
+      drawer: const custom_nav.NavigationDrawer(),
+      body: isLoading
+          ? Center(child: CircularProgressIndicator())
+          : hasError
+              ? Center(child: Text('Error al cargar los préstamos.'))
+              : Column(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: TextField(
+                        controller: searchController,
+                        decoration: InputDecoration(
+                          labelText: 'Buscar por ID de préstamo',
+                          prefixIcon: Icon(Icons.search),
+                          border: OutlineInputBorder(),
+                        ),
+                        onChanged: _filterPrestamos,
+                      ),
+                    ),
+                    Expanded(
+                      child: filteredPrestamos.isEmpty
+                          ? Center(child: Text('No se encontraron resultados'))
+                          : ListView.builder(
+                              itemCount: filteredPrestamos.length,
+                              itemBuilder: (context, index) {
+                                final prestamo = filteredPrestamos[index];
+                                return PrestamoItemWidget(
+                                  prestamo: prestamo,
+                                  onDelete: _onDeletePrestamo,
+                                );
+                              },
+                            ),
+                    ),
+                  ],
+                ),
+    );
   }
 }

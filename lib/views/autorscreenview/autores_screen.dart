@@ -5,6 +5,7 @@ import '../../services/api_client.dart';
 import '../../services/api_service.dart'; // Asegúrate de importar ApiService
 import 'MenuItemWidget.dart'; // Asegúrate de tener este widget
 import 'package:biblioteca97/views/navegacionview/navegacion_screen.dart' as custom_nav; // Asegúrate del path correcto
+import 'package:biblioteca97/views/autorscreenview/autores_register_screen.dart'; // Importa la pantalla de registro
 
 class AutoresScreen extends StatefulWidget {
   @override
@@ -14,32 +15,64 @@ class AutoresScreen extends StatefulWidget {
 class _AutoresScreenState extends State<AutoresScreen> {
   late ApiService _apiService;
   List<Autor> listaAutores = [];
+  List<Autor> listaFiltrada = []; // Lista para mostrar según búsqueda
+
   bool isEditing = false; // Para saber si estamos en modo edición
   late DataAutor autorEditando; // Para almacenar el autor que estamos editando
 
-  // Controladores para el formulario
+  // Controladores para el formulario de edición
   TextEditingController idController = TextEditingController();
   TextEditingController nomController = TextEditingController();
-  TextEditingController contrasenaController = TextEditingController();
+
+  // Controlador para el buscador
+  TextEditingController searchController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
     _apiService = ApiService(client: ApiClient());
     _fetchAutores();
+
+    // Listener para buscar al escribir
+    searchController.addListener(() {
+      _filtrarAutores();
+    });
+  }
+
+  @override
+  void dispose() {
+    searchController.dispose();
+    idController.dispose();
+    nomController.dispose();
+    super.dispose();
   }
 
   // Fetch de autores desde la API
   Future<void> _fetchAutores() async {
     try {
       listaAutores = await _apiService.listAutorV2();
-      setState(() {}); // Actualizamos el estado para que se muestre la lista
+      listaFiltrada = List.from(listaAutores); // Inicializamos filtrada igual a original
+      setState(() {});
     } catch (e) {
       print("Error al obtener autores: $e");
     }
   }
 
-  // Método para editar autor
+  // Filtrar lista según búsqueda
+  void _filtrarAutores() {
+  final query = searchController.text.toLowerCase();
+
+  if (query.isEmpty) {
+    listaFiltrada = List.from(listaAutores);
+  } else {
+    listaFiltrada = listaAutores.where((autor) {
+      final nombre = autor.autor_nom?.toLowerCase() ?? '';
+      return nombre.contains(query);
+    }).toList();
+  }
+  setState(() {});
+}
+  // Método para editar autor (aún usamos diálogo para editar)
   void editarAutor(DataAutor autor) {
     setState(() {
       isEditing = true;
@@ -47,7 +80,7 @@ class _AutoresScreenState extends State<AutoresScreen> {
       idController.text = autor.idAutor;
       nomController.text = autor.nomAutor;
     });
-    _showAddUpdateDialog();
+    _showEditDialog();
   }
 
   // Método para eliminar autor
@@ -56,7 +89,7 @@ class _AutoresScreenState extends State<AutoresScreen> {
     try {
       bool result = await _apiService.deleteAutor(autor.idAutor);
       if (result) {
-        _fetchAutores(); // Actualizamos la lista
+        _fetchAutores(); // Actualizamos la lista original y filtrada
       } else {
         print("Error al eliminar autor.");
       }
@@ -65,26 +98,38 @@ class _AutoresScreenState extends State<AutoresScreen> {
     }
   }
 
-  // Método para mostrar el dialog de agregar/editar autor
-  void _showAddUpdateDialog() {
+  // Mostrar diálogo para editar autor
+  void _showEditDialog() {
     showDialog(
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Text(isEditing ? 'Editar Autor' : 'Agregar Autor'),
-          content: _buildForm(),
+          title: const Text('Editar Autor'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: idController,
+                decoration: const InputDecoration(labelText: 'ID Autor'),
+                readOnly: true,
+              ),
+              TextField(
+                controller: nomController,
+                decoration: const InputDecoration(labelText: 'Nombre Autor'),
+              ),
+            ],
+          ),
           actions: <Widget>[
             TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: Text('Cancelar'),
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Cancelar'),
             ),
             TextButton(
-              onPressed: () {
-                isEditing ? _updateAutor() : _addAutor();
+              onPressed: () async {
+                await _updateAutor();
+                Navigator.of(context).pop();
               },
-              child: Text(isEditing ? 'Actualizar' : 'Agregar'),
+              child: const Text('Actualizar'),
             ),
           ],
         );
@@ -92,91 +137,73 @@ class _AutoresScreenState extends State<AutoresScreen> {
     );
   }
 
-  // Formulario de agregar/editar autor
-  Widget _buildForm() {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: <Widget>[
-        TextField(
-          controller: idController,
-          decoration: InputDecoration(labelText: 'ID Autor'),
-          readOnly: isEditing, // Si estamos editando, no permitimos cambiar el ID
-        ),
-        TextField(
-          controller: nomController,
-          decoration: InputDecoration(labelText: 'Nombre Autor'),
-        ),
-      ],
-    );
-  }
-
-  // Método para agregar un autor
-  Future<void> _addAutor() async {
-    final autor = DataAutor(
-      idAutor: DateTime.now().millisecondsSinceEpoch.toString(), // Generar un ID temporal
-      nomAutor: nomController.text,
-    );
-
-    try {
-      await _apiService.addAutor(autor); // Llamamos al servicio para agregar
-      _fetchAutores(); // Actualizamos la lista
-      Navigator.of(context).pop(); // Cerramos el diálogo
-    } catch (e) {
-      print("Error al agregar autor: $e");
-    }
-  }
-
   // Método para actualizar un autor
   Future<void> _updateAutor() async {
     final autor = DataAutor(
       idAutor: idController.text,
-      nomAutor: nomController.text, // Usamos los datos del formulario
+      nomAutor: nomController.text,
     );
 
     try {
-      await _apiService.updateAutor(autor); // Llamamos al servicio para actualizar
-      _fetchAutores(); // Actualizamos la lista
-      Navigator.of(context).pop(); // Cerramos el diálogo
+      await _apiService.updateAutor(autor);
+      _fetchAutores();
     } catch (e) {
       print("Error al actualizar autor: $e");
     }
   }
 
-  // Método para mostrar los autores en pantalla
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Autores'),
+        title: const Text('Autores'),
         backgroundColor: Colors.red,
         actions: [
           IconButton(
-            icon: Icon(Icons.add),
-            onPressed: () {
-              setState(() {
-                isEditing = false;
-                idController.clear();
-                nomController.clear();
-              });
-              _showAddUpdateDialog();
+            icon: const Icon(Icons.add),
+            onPressed: () async {
+              await Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const AutoresRegisterScreen(),
+                ),
+              );
+              _fetchAutores(); // Refrescar lista tras registrar nuevo autor
             },
           ),
         ],
       ),
-      drawer: const custom_nav.NavigationDrawer(), // Aquí reutilizas tu NavigationDrawer
-      body: listaAutores.isEmpty
-          ? Center(child: CircularProgressIndicator())
-          : ListView.builder(
-              itemCount: listaAutores.length,
-              itemBuilder: (context, index) {
-                final autor = listaAutores[index];
-                return MenuItemWidget(
-                  autor: autor,
-                  onEdit: editarAutor,
-                  onDelete: eliminarAutor,
-                );
-              },
+      drawer: const custom_nav.NavigationDrawer(),
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: TextField(
+              controller: searchController,
+              decoration: InputDecoration(
+                labelText: 'Buscar Autor',
+                prefixIcon: const Icon(Icons.search),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+              ),
             ),
+          ),
+          Expanded(
+            child: listaFiltrada.isEmpty
+                ? const Center(child: Text('No se encontraron autores'))
+                : ListView.builder(
+                    itemCount: listaFiltrada.length,
+                    itemBuilder: (context, index) {
+                      final autor = listaFiltrada[index];
+                      return MenuItemWidget(
+                        autor: autor,
+                        onEdit: editarAutor,
+                        onDelete: eliminarAutor,
+                      );
+                    },
+                  ),
+          ),
+        ],
+      ),
     );
   }
 }

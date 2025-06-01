@@ -4,7 +4,8 @@ import '../../models_ant/data_libro.dart';
 import '../../services/api_client.dart';
 import '../../services/api_service.dart';
 import 'LibroItemWidget.dart';
-import 'package:biblioteca97/views/navegacionview/navegacion_screen.dart' as custom_nav; // Asegúrate de tener el path correcto
+import 'package:biblioteca97/views/navegacionview/navegacion_screen.dart' as custom_nav;
+import 'package:biblioteca97/views/librosscreenview/registrar_libro_screen.dart'; // Importa la pantalla de registro
 
 class LibrosScreen extends StatefulWidget {
   final ApiService apiService;
@@ -18,13 +19,8 @@ class LibrosScreen extends StatefulWidget {
 class _LibrosScreenState extends State<LibrosScreen> {
   late ApiService _apiService;
   List<Libro> listaLibros = [];
-  bool isEditing = false;
-  late DataLibro libroEditando;
 
   TextEditingController searchController = TextEditingController();
-  TextEditingController tituloController = TextEditingController();
-  TextEditingController autorController = TextEditingController();
-  TextEditingController existenciasController = TextEditingController();
 
   @override
   void initState() {
@@ -47,25 +43,22 @@ class _LibrosScreenState extends State<LibrosScreen> {
     setState(() {});
   }
 
+  // Abre la pantalla para agregar un libro y al regresar recarga la lista
   void _onAddLibro() {
-    setState(() {
-      isEditing = false;
-      tituloController.clear();
-      autorController.clear();
-      existenciasController.clear();
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => RegistrarLibroScreen()),
+    ).then((_) {
+      _fetchLibros();
     });
-    _showAddUpdateDialog();
   }
 
+  // Puedes adaptar para abrir pantalla edición si la tienes creada
   void _onEditLibro(DataLibro libro) {
-    setState(() {
-      isEditing = true;
-      libroEditando = libro;
-      tituloController.text = libro.nomLibro ?? '';
-      autorController.text = libro.nomAutor ?? '';
-      existenciasController.text = libro.existencias.toString();
-    });
-    _showAddUpdateDialog();
+    // Ejemplo: abrir la pantalla de edición pasando el libro
+    // Navigator.push(context, MaterialPageRoute(
+    //   builder: (_) => LibroRegisterScreen(libro: libro)
+    // )).then((_) => _fetchLibros());
   }
 
   void _onDeleteLibro(DataLibro libro) async {
@@ -96,77 +89,6 @@ class _LibrosScreenState extends State<LibrosScreen> {
     }
   }
 
-  void _showAddUpdateDialog() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(isEditing ? 'Editar Libro' : 'Agregar Libro'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: tituloController,
-              decoration: InputDecoration(labelText: 'Título'),
-            ),
-            TextField(
-              controller: autorController,
-              decoration: InputDecoration(labelText: 'Autor'),
-            ),
-            TextField(
-              controller: existenciasController,
-              decoration: InputDecoration(labelText: 'Existencias'),
-              keyboardType: TextInputType.number,
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text('Cancelar'),
-          ),
-          TextButton(
-            onPressed: () {
-              isEditing ? _updateLibro() : _addLibro();
-            },
-            child: Text(isEditing ? 'Actualizar' : 'Agregar'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Future<void> _addLibro() async {
-    final nuevoLibro = DataLibro(
-      isbn: '',
-      nomLibro: tituloController.text,
-      nomAutor: autorController.text,
-      existencias: int.tryParse(existenciasController.text) ?? 0,
-    );
-
-    final success = await _apiService.addLibro(nuevoLibro);
-    if (success) {
-      _fetchLibros();
-      Navigator.of(context).pop();
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Libro agregado")));
-    }
-  }
-
-  Future<void> _updateLibro() async {
-    final libroActualizado = DataLibro(
-      isbn: libroEditando.isbn,
-      nomLibro: tituloController.text,
-      nomAutor: autorController.text,
-      existencias: int.tryParse(existenciasController.text) ?? libroEditando.existencias,
-    );
-
-    final success = await _apiService.updateLibro(libroActualizado);
-    if (success) {
-      _fetchLibros();
-      Navigator.of(context).pop();
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Libro actualizado")));
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final librosFiltrados = listaLibros.where((libro) {
@@ -179,8 +101,10 @@ class _LibrosScreenState extends State<LibrosScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text("Libros"),
-        backgroundColor: Colors.red, // Asegúrate de que el color sea rojo siempre
-        actions: [IconButton(icon: Icon(Icons.add), onPressed: _onAddLibro)],
+        backgroundColor: Colors.red,
+        actions: [
+          IconButton(icon: Icon(Icons.add), onPressed: _onAddLibro),
+        ],
       ),
       drawer: const custom_nav.NavigationDrawer(),
       body: Column(
