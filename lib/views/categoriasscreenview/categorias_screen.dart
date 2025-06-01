@@ -1,3 +1,4 @@
+import 'package:biblioteca97/views/navegacionview/navegacion_drawer.dart';
 import 'package:flutter/material.dart';
 import 'package:biblioteca97/models/categoria.dart';
 import '../../models_ant/data_categoria.dart';
@@ -162,7 +163,7 @@ class _CategoriaScreenState extends State<CategoriaScreen> {
           ),
         ],
       ),
-      drawer: const custom_nav.NavigationDrawer(), // Aquí reutilizas tu NavigationDrawer
+      drawer: NavegacionDrawer(), // Aquí reutilizas tu NavigationDrawer
       body: listaCategorias.isEmpty
           ? Center(child: CircularProgressIndicator()) // Mostramos un loader mientras cargan las categorías
           : ListView.builder(

@@ -1,3 +1,4 @@
+import 'package:biblioteca97/views/navegacionview/navegacion_drawer.dart';
 import 'package:flutter/material.dart';
 import 'package:biblioteca97/models/usuario.dart';
 import '../../services/api_client.dart';
@@ -109,7 +110,7 @@ class _UsuariosScreenState extends State<UsuariosScreen> {
           ),
         ],
       ),
-      drawer: const custom_nav.NavigationDrawer(), // Se usa tu Drawer
+      drawer: NavegacionDrawer(), // Se usa tu Drawer
       body: Column(
         children: [
           Padding(

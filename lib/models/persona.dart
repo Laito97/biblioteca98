@@ -1,5 +1,5 @@
 class Persona {
-  final int id;
+  final int? id;
   final String nombres;
   final String apellidos;
   final String dni;
@@ -8,7 +8,7 @@ class Persona {
   final String direccion;
 
   Persona({
-    required this.id,
+     this.id,
     required this.nombres,
     required this.apellidos,
     required this.dni,
@@ -27,5 +27,17 @@ class Persona {
       correo: json['correo'] ?? '',
       direccion: json['direccion'] ?? '',
     );
+  }
+
+  
+  Map<String, dynamic> toJson() {
+    return {
+      "nombres": nombres,
+      "apellidos": apellidos,
+      "num_contacto": numContacto,
+      "correo": correo,
+      "dni": dni,
+      "direccion": direccion,
+    };
   }
 }

@@ -1,7 +1,9 @@
+import 'package:biblioteca97/utils/usuario_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:biblioteca97/services/api_service.dart';
 import 'package:biblioteca97/models_ant/admin_usuario_response.dart';
 import 'package:biblioteca97/views/navegacionview/navegacion_screen.dart';
+import 'package:provider/provider.dart';
 import '../../services/api_client.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -196,17 +198,17 @@ class _LoginScreenState extends State<LoginScreen> {
     try {
       final response = await apiService.loginV2(usuario, contrasena);
 
-      Navigator.of(context).pop(); 
+      Navigator.of(context).pop();
 
       if (response != null && response.responseCode == 200) {
-        final nombre = response.usuario?.persona?.nombres;
-        Navigator.pushReplacement(
+        final usuario = response.usuario!;
+        // Guardar usuario en el provider
+        Provider.of<UsuarioProvider>(
           context,
-          MaterialPageRoute(
-            builder:
-                (_) => NavegacionScreen(nombreUsuario: nombre ?? 'Sin Nombre'),
-          ),
-        );
+          listen: false,
+        ).setUsuario(usuario);
+
+        Navigator.pushReplacementNamed(context, '/navegacion');
       } else {
         final mensaje = response?.message ?? "Error desconocido";
         _mostrarError(mensaje);

@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:biblioteca97/controllers/auth_controller.dart';
 import 'package:biblioteca97/controllers/autor_controller.dart';
 import 'package:biblioteca97/controllers/categoria_controller.dart';
@@ -29,7 +31,7 @@ class ApiService {
 
   //SERVICES V2
 
-    // LOGIN V2
+  // LOGIN V2
   Future<AuthResponse?> loginV2(String usuario, String contrasena) async {
     try {
       final response = await client.post('/auth/login', {
@@ -37,7 +39,9 @@ class ApiService {
         'password': contrasena,
       });
 
-      if (response != null && response is Map<String, dynamic> && response.isNotEmpty) {
+      if (response != null &&
+          response is Map<String, dynamic> &&
+          response.isNotEmpty) {
         if (response.containsKey('access_token')) {
           return AuthResponse.fromJson(response);
         } else {
@@ -50,16 +54,17 @@ class ApiService {
       }
     } catch (e) {
       print("Error en login: $e");
-      rethrow; 
+      rethrow;
     }
   }
-
 
   // Listar Usuarios V2
   Future<List<Usuario>> listUserV2() async {
     try {
       final data = await client.get('/usuarios/list');
-      if (data != null && data['usuarios'] != null && data['usuarios'] is List) {
+      if (data != null &&
+          data['usuarios'] != null &&
+          data['usuarios'] is List) {
         print("DATA RECIBIDA: $data");
         final response = UsuarioController.fromJson(data);
         return response.usuarios;
@@ -72,8 +77,8 @@ class ApiService {
     }
   }
 
-// Listar Autores V2
-Future<List<Autor>> listAutorV2() async {
+  // Listar Autores V2
+  Future<List<Autor>> listAutorV2() async {
     try {
       final data = await client.get('/autores/list');
       if (data != null && data['autores'] != null && data['autores'] is List) {
@@ -89,10 +94,12 @@ Future<List<Autor>> listAutorV2() async {
   }
 
   // Listar Editoriales V2
-Future<List<Editorial>> listEditorialesV2() async {
+  Future<List<Editorial>> listEditorialesV2() async {
     try {
       final data = await client.get('/editoriales/list');
-      if (data != null && data['editoriales'] != null && data['editoriales'] is List) {
+      if (data != null &&
+          data['editoriales'] != null &&
+          data['editoriales'] is List) {
         final response = EditorialController.fromJson(data);
         return response.editoriales;
       } else {
@@ -104,11 +111,13 @@ Future<List<Editorial>> listEditorialesV2() async {
     }
   }
 
-    // Listar Categorias V2
-Future<List<Categoria>> listCategoriasV2() async {
+  // Listar Categorias V2
+  Future<List<Categoria>> listCategoriasV2() async {
     try {
       final data = await client.get('/categorias/list');
-      if (data != null && data['categorias'] != null && data['categorias'] is List) {
+      if (data != null &&
+          data['categorias'] != null &&
+          data['categorias'] is List) {
         final response = CategoriaController.fromJson(data);
         return response.categorias;
       } else {
@@ -120,8 +129,8 @@ Future<List<Categoria>> listCategoriasV2() async {
     }
   }
 
-      // Listar Libros V2
-Future<List<Libro>> listLibrosV2() async {
+  // Listar Libros V2
+  Future<List<Libro>> listLibrosV2() async {
     try {
       final data = await client.get('/libros/list');
       if (data != null && data['libros'] != null && data['libros'] is List) {
@@ -136,12 +145,13 @@ Future<List<Libro>> listLibrosV2() async {
     }
   }
 
-
-      // Listar prestamos V2
-Future<List<Prestamo>> listPrestamosV2() async {
+  // Listar prestamos V2
+  Future<List<Prestamo>> listPrestamosV2() async {
     try {
       final data = await client.get('/prestamos/list');
-      if (data != null && data['prestamos'] != null && data['prestamos'] is List) {
+      if (data != null &&
+          data['prestamos'] != null &&
+          data['prestamos'] is List) {
         final response = PrestamoController.fromJson(data);
         return response.prestamos;
       } else {
@@ -153,7 +163,25 @@ Future<List<Prestamo>> listPrestamosV2() async {
     }
   }
 
+  // Guardar Usuarios V2
+  Future<bool> registrarUsuarioV2(Usuario usuario) async {
+    try {
+      final response = await client.post('/usuarios/guardar', usuario.toJson());
 
+      if (response['response_code'] != null &&
+          response['response_code'] >= 200 &&
+          response['response_code'] < 300) {
+        log("Usuario creado: ${response['usuario']}");
+        return true;
+      } else {
+        log("Error en el servidor: ${response.toString()}");
+        return false;
+      }
+    } catch (e) {
+      log("Error en registrarUsuarioV2: $e");
+      return false;
+    }
+  }
 
   // ===================== LOGIN =====================
   Future<AdminUsuarioResponse?> login(String usuario, String contrasena) async {
@@ -163,7 +191,9 @@ Future<List<Prestamo>> listPrestamosV2() async {
         'contrasena': contrasena,
       });
 
-      if (response != null && response is Map<String, dynamic> && response.isNotEmpty) {
+      if (response != null &&
+          response is Map<String, dynamic> &&
+          response.isNotEmpty) {
         return AdminUsuarioResponse.fromJson(response);
       } else {
         print("Respuesta de login vacía o mal formada.");
@@ -182,7 +212,9 @@ Future<List<Prestamo>> listPrestamosV2() async {
       final data = await client.get('/usuarios');
       if (data != null && data['data'] is List) {
         return (data['data'] as List)
-            .map((e) => DataUsuario.fromJson(e)) // Deserializamos la respuesta en objetos DataUsuario
+            .map(
+              (e) => DataUsuario.fromJson(e),
+            ) // Deserializamos la respuesta en objetos DataUsuario
             .whereType<DataUsuario>()
             .toList();
       } else {
@@ -198,7 +230,8 @@ Future<List<Prestamo>> listPrestamosV2() async {
   Future<bool> addUser(DataUsuario usuario) async {
     try {
       final response = await client.post('/usuarios/add', usuario.toJson());
-      return response['code'] == '200';  // Verifica que la API responda correctamente
+      return response['code'] ==
+          '200'; // Verifica que la API responda correctamente
     } catch (e) {
       print("Error al agregar usuario: $e");
       return false;
@@ -209,7 +242,8 @@ Future<List<Prestamo>> listPrestamosV2() async {
   Future<bool> updateUser(DataUsuario usuario) async {
     try {
       final response = await client.post('/usuarios/update', usuario.toJson());
-      return response['code'] == '200';  // Asegúrate de que la respuesta sea la correcta
+      return response['code'] ==
+          '200'; // Asegúrate de que la respuesta sea la correcta
     } catch (e) {
       print("Error al actualizar usuario: $e");
       return false;
@@ -222,7 +256,8 @@ Future<List<Prestamo>> listPrestamosV2() async {
       final response = await client.post('/usuarios/delete', {
         'id_usuario': idUsuario,
       });
-      return response['code'] == '200';  // Verifica que la API responda correctamente
+      return response['code'] ==
+          '200'; // Verifica que la API responda correctamente
     } catch (e) {
       print("Error al eliminar usuario: $e");
       return false;
@@ -252,7 +287,8 @@ Future<List<Prestamo>> listPrestamosV2() async {
   Future<bool> addAutor(DataAutor autor) async {
     try {
       final response = await client.post('/autores/add', autor.toJson());
-      return response['code'] == '200';  // Verifica que la API responda correctamente
+      return response['code'] ==
+          '200'; // Verifica que la API responda correctamente
     } catch (e) {
       print("Error al agregar autor: $e");
       return false;
@@ -263,7 +299,8 @@ Future<List<Prestamo>> listPrestamosV2() async {
   Future<bool> updateAutor(DataAutor autor) async {
     try {
       final response = await client.post('/autores/update', autor.toJson());
-      return response['code'] == '200';  // Asegúrate de que la respuesta sea la correcta
+      return response['code'] ==
+          '200'; // Asegúrate de que la respuesta sea la correcta
     } catch (e) {
       print("Error al actualizar autor: $e");
       return false;
@@ -276,7 +313,8 @@ Future<List<Prestamo>> listPrestamosV2() async {
       final response = await client.post('/autores/delete', {
         'id_autor': idAutor,
       });
-      return response['code'] == '200';  // Verifica que la API responda correctamente
+      return response['code'] ==
+          '200'; // Verifica que la API responda correctamente
     } catch (e) {
       print("Error al eliminar autor: $e");
       return false;
@@ -305,8 +343,12 @@ Future<List<Prestamo>> listPrestamosV2() async {
   // AGREGAR EDITORIAL
   Future<bool> addEditorial(DataEditorial editorial) async {
     try {
-      final response = await client.post('/editoriales/add', editorial.toJson());
-      return response['code'] == '200';  // Verifica que la API responda correctamente
+      final response = await client.post(
+        '/editoriales/add',
+        editorial.toJson(),
+      );
+      return response['code'] ==
+          '200'; // Verifica que la API responda correctamente
     } catch (e) {
       print("Error al agregar editorial: $e");
       return false;
@@ -316,8 +358,12 @@ Future<List<Prestamo>> listPrestamosV2() async {
   // ACTUALIZAR EDITORIAL
   Future<bool> updateEditorial(DataEditorial editorial) async {
     try {
-      final response = await client.post('/editoriales/update', editorial.toJson());
-      return response['code'] == '200';  // Asegúrate de que la respuesta sea la correcta
+      final response = await client.post(
+        '/editoriales/update',
+        editorial.toJson(),
+      );
+      return response['code'] ==
+          '200'; // Asegúrate de que la respuesta sea la correcta
     } catch (e) {
       print("Error al actualizar editorial: $e");
       return false;
@@ -330,7 +376,8 @@ Future<List<Prestamo>> listPrestamosV2() async {
       final response = await client.post('/editoriales/delete', {
         'id_editorial': idEditorial,
       });
-      return response['code'] == '200';  // Verifica que la API responda correctamente
+      return response['code'] ==
+          '200'; // Verifica que la API responda correctamente
     } catch (e) {
       print("Error al eliminar editorial: $e");
       return false;
@@ -360,7 +407,8 @@ Future<List<Prestamo>> listPrestamosV2() async {
   Future<bool> addCategoria(DataCategoria categoria) async {
     try {
       final response = await client.post('/categorias/add', categoria.toJson());
-      return response['code'] == '200';  // Verifica que la API responda correctamente
+      return response['code'] ==
+          '200'; // Verifica que la API responda correctamente
     } catch (e) {
       print("Error al agregar categoría: $e");
       return false;
@@ -370,8 +418,12 @@ Future<List<Prestamo>> listPrestamosV2() async {
   // ACTUALIZAR CATEGORÍA
   Future<bool> updateCategoria(DataCategoria categoria) async {
     try {
-      final response = await client.post('/categorias/update', categoria.toJson());
-      return response['code'] == '200';  // Asegúrate de que la respuesta sea la correcta
+      final response = await client.post(
+        '/categorias/update',
+        categoria.toJson(),
+      );
+      return response['code'] ==
+          '200'; // Asegúrate de que la respuesta sea la correcta
     } catch (e) {
       print("Error al actualizar categoría: $e");
       return false;
@@ -384,7 +436,8 @@ Future<List<Prestamo>> listPrestamosV2() async {
       final response = await client.post('/categorias/delete', {
         'id_categoria': idCategoria,
       });
-      return response['code'] == '200';  // Verifica que la API responda correctamente
+      return response['code'] ==
+          '200'; // Verifica que la API responda correctamente
     } catch (e) {
       print("Error al eliminar categoría: $e");
       return false;
@@ -415,7 +468,7 @@ Future<List<Prestamo>> listPrestamosV2() async {
   Future<bool> addLibro(DataLibro libro) async {
     try {
       final response = await client.post('/libros/add', libro.toJson());
-      return response['code'] == '200';  // Verifica la respuesta de la API
+      return response['code'] == '200'; // Verifica la respuesta de la API
     } catch (e) {
       print("Error al agregar libro: $e");
       return false;
@@ -426,7 +479,7 @@ Future<List<Prestamo>> listPrestamosV2() async {
   Future<bool> updateLibro(DataLibro libro) async {
     try {
       final response = await client.post('/libros/update', libro.toJson());
-      return response['code'] == '200';  // Verifica la respuesta de la API
+      return response['code'] == '200'; // Verifica la respuesta de la API
     } catch (e) {
       print("Error al actualizar libro: $e");
       return false;
@@ -436,8 +489,10 @@ Future<List<Prestamo>> listPrestamosV2() async {
   // ELIMINAR LIBRO
   Future<bool> deleteLibro(String idLibro) async {
     try {
-      final response = await client.post('/libros/delete', {'id_libro': idLibro});
-      return response['code'] == '200';  // Verifica la respuesta de la API
+      final response = await client.post('/libros/delete', {
+        'id_libro': idLibro,
+      });
+      return response['code'] == '200'; // Verifica la respuesta de la API
     } catch (e) {
       print("Error al eliminar libro: $e");
       return false;
@@ -448,14 +503,18 @@ Future<List<Prestamo>> listPrestamosV2() async {
   // OBTENER PRÉSTAMOS
   Future<List<DataPrestamo>> fetchPrestamos() async {
     try {
-      final response = await client.get('/prestamos');  // Llamada a la API para obtener todos los préstamos
+      final response = await client.get(
+        '/prestamos',
+      ); // Llamada a la API para obtener todos los préstamos
       if (response != null && response['data'] is List) {
         return (response['data'] as List)
             .map((e) => DataPrestamo.fromJson(e))
             .whereType<DataPrestamo>()
             .toList();
       } else {
-        print("No se encontraron préstamos o el formato de respuesta es incorrecto.");
+        print(
+          "No se encontraron préstamos o el formato de respuesta es incorrecto.",
+        );
         return [];
       }
     } catch (e) {
@@ -467,7 +526,9 @@ Future<List<Prestamo>> listPrestamosV2() async {
   // FILTRAR PRÉSTAMOS POR USUARIO
   Future<List<DataPrestamo>> fetchPrestamosPorUsuario(String usuarioId) async {
     try {
-      final response = await client.get('/prestamos/usuario/$usuarioId');  // Filtra préstamos por el ID de usuario
+      final response = await client.get(
+        '/prestamos/usuario/$usuarioId',
+      ); // Filtra préstamos por el ID de usuario
       if (response != null && response['data'] is List) {
         return (response['data'] as List)
             .map((e) => DataPrestamo.fromJson(e))
@@ -493,31 +554,33 @@ Future<List<Prestamo>> listPrestamosV2() async {
       // Verifica que la respuesta sea 200 (éxito)
       if (response != null && response['code'] == '200') {
         print("La devolución del préstamo fue exitosa.");
-        return true;  // La devolución fue exitosa
+        return true; // La devolución fue exitosa
       } else {
         print("Hubo un error al devolver el préstamo.");
-        return false;  // Hubo un error al devolver el préstamo
+        return false; // Hubo un error al devolver el préstamo
       }
     } catch (e) {
       print("Error al devolver préstamo: $e");
-      return false;  // Si ocurre un error, retornamos false
+      return false; // Si ocurre un error, retornamos false
     }
   }
 
   // ELIMINAR PRÉSTAMO
   Future<bool> deletePrestamo(String idPrestamo) async {
     try {
-      final response = await client.post('/prestamos/delete', {'id_prestamo': idPrestamo});
+      final response = await client.post('/prestamos/delete', {
+        'id_prestamo': idPrestamo,
+      });
       if (response != null && response['code'] == '200') {
         print("El préstamo fue eliminado exitosamente.");
-        return true;  // El préstamo fue eliminado correctamente
+        return true; // El préstamo fue eliminado correctamente
       } else {
         print("Hubo un error al eliminar el préstamo.");
-        return false;  // Hubo un error al eliminar el préstamo
+        return false; // Hubo un error al eliminar el préstamo
       }
     } catch (e) {
       print("Error al eliminar préstamo: $e");
-      return false;  // Si ocurre un error, retornamos false
+      return false; // Si ocurre un error, retornamos false
     }
   }
 
