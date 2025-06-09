@@ -3,8 +3,6 @@ import 'package:biblioteca97/models/tipo_usuario.dart';
 import 'package:biblioteca97/models/usuario.dart';
 import 'package:biblioteca97/services/api_service.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
 import '../../services/api_client.dart';
 
 class RegisterScreen extends StatefulWidget {
@@ -28,7 +26,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   bool isPasswordVisible = false;
 
-  String? _selectedRole;
+  // Lista estática (maqueta) de tipos de usuario
+  final List<TipoUsuario> _tiposUsuario = [
+    TipoUsuario(id: 1, nombre: 'Administrador'),
+    TipoUsuario(id: 2, nombre: 'Bibliotecario'),
+    TipoUsuario(id: 3, nombre: 'Lector'),
+  ];
+  TipoUsuario? _selectedTipoUsuario;
 
   @override
   void initState() {
@@ -44,7 +48,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
-            Navigator.pop(context); // Regresa a la pantalla anterior
+            Navigator.pop(context);
           },
         ),
         backgroundColor: Colors.red,
@@ -135,8 +139,42 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       borderSide: BorderSide.none,
                     ),
                   ),
+                  validator: (value) =>
+                      value == null || value.isEmpty ? 'Campo requerido' : null,
                 ),
+                const SizedBox(height: 10),
 
+                // ComboBox de tipo de usuario (maqueta)
+                DropdownButtonFormField<TipoUsuario>(
+                  value: _selectedTipoUsuario,
+                  hint: const Text("Seleccione tipo de usuario"),
+                  decoration: InputDecoration(
+                    filled: true,
+                    fillColor: const Color(0xFFF6F6F6),
+                    prefixIcon: const Icon(Icons.account_box),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(30),
+                      borderSide: BorderSide.none,
+                    ),
+                  ),
+                  items: _tiposUsuario.map((tipo) {
+                    return DropdownMenuItem(
+                      value: tipo,
+                      child: Text(tipo.nombre ?? 'Tipo ${tipo.id}'),
+                    );
+                  }).toList(),
+                  onChanged: (TipoUsuario? value) {
+                    setState(() {
+                      _selectedTipoUsuario = value;
+                    });
+                  },
+                  validator: (value) {
+                    if (value == null) {
+                      return 'Seleccione un tipo de usuario';
+                    }
+                    return null;
+                  },
+                ),
                 const SizedBox(height: 30),
 
                 SizedBox(
@@ -162,7 +200,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           direccion: _direccionController.text,
                         );
 
-                        final tipoUsuario = TipoUsuario(id: 2);
+                        final tipoUsuario =
+                            _selectedTipoUsuario ?? TipoUsuario(id: 1);
 
                         final usuario = Usuario(
                           usuarioId: 0,
@@ -218,28 +257,33 @@ class _RegisterScreenState extends State<RegisterScreen> {
           borderSide: BorderSide.none,
         ),
       ),
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return 'Campo requerido';
+        }
+        return null;
+      },
     );
   }
 
   void _showDialog(String message) {
     showDialog(
       context: context,
-      builder:
-          (_) => AlertDialog(
-            title: const Text("Resultado"),
-            content: Text(message),
-            actions: [
-              TextButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                  if (message.contains("registrado con éxito")) {
-                    _limpiarFormulario();
-                  }
-                },
-                child: const Text("OK"),
-              ),
-            ],
+      builder: (_) => AlertDialog(
+        title: const Text("Resultado"),
+        content: Text(message),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              if (message.contains("registrado con éxito")) {
+                _limpiarFormulario();
+              }
+            },
+            child: const Text("OK"),
           ),
+        ],
+      ),
     );
   }
 
@@ -251,5 +295,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
     _dniController.clear();
     _direccionController.clear();
     _passwordController.clear();
+    setState(() {
+      _selectedTipoUsuario = null;
+    });
   }
 }
