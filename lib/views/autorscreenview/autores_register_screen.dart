@@ -1,4 +1,5 @@
 import 'package:biblioteca97/models/autor.dart';
+import 'package:biblioteca97/models/usuario.dart';
 import 'package:biblioteca97/services/api_service.dart';
 import 'package:flutter/material.dart';
 import '../../services/api_client.dart';
@@ -45,7 +46,7 @@ class _AutoresRegisterScreenState extends State<AutoresRegisterScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Nota: No obtenemos usuarioLogged aquí porque lo usaremos solo en el botón
+    final usuarioProvider = Provider.of<UsuarioProvider>(context).usuario;
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -69,16 +70,15 @@ class _AutoresRegisterScreenState extends State<AutoresRegisterScreen> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Image.asset('assets/agregar_usuario.png', width: 200, height: 120),
-                const SizedBox(height: 10),
-                const Text(
-                  "Registro de Autor",
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: Color.fromARGB(221, 19, 19, 19),
-                  ),
+                Image.asset(
+                  'assets/agregar_usuario.png',
+                  width: 200,
+                  height: 120,
                 ),
+                const SizedBox(height: 10),
+                usuarioProvider == null
+                    ? const Center(child: Text('No hay usuario'))
+                    : Center(child: Text('Hola ${usuarioProvider.usuarioId}')),
                 const SizedBox(height: 30),
                 TextFormField(
                   controller: _nombreAutorController,
@@ -112,26 +112,21 @@ class _AutoresRegisterScreenState extends State<AutoresRegisterScreen> {
                       ),
                     ),
                     onPressed: () async {
-                      print("✅ Botón REGISTRAR AUTOR presionado");
-
                       if (_formKey.currentState!.validate()) {
-                        // Obtenemos usuarioLogged aquí, asegurando que esté actualizado
-                        final usuarioLogged = Provider.of<UsuarioProvider>(context, listen: false).usuario;
-
-                        if (usuarioLogged == null) {
-                          _showDialog("Error: Usuario no autenticado.");
-                          return;
-                        }
-
-                        print("🔑 Usuario logueado: ${usuarioLogged.usuarioId}");
-
                         final autor = Autor(
                           autor_nom: _nombreAutorController.text,
-                          usuario_creacion_id: usuarioLogged.usuarioId,
+                          usuario_creacion_id: usuarioProvider?.usuarioId,
+                        );
+
+                        print('ASASS' + _nombreAutorController.text);
+                        print(
+                          'ASASS2 ${usuarioProvider?.usuarioId.toString()}',
                         );
 
                         try {
-                          bool registrado = await _apiService.registrarAutorV2(autor);
+                          bool registrado = await _apiService.registrarAutorV2(
+                            autor,
+                          );
                           _showDialog(
                             registrado
                                 ? "Autor registrado con éxito"

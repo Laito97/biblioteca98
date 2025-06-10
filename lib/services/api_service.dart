@@ -205,11 +205,8 @@ class ApiService {
 //Guardar Autores v2
    Future<bool> registrarAutorV2(Autor autor) async {
   try {
-    final Map<String, dynamic> body = {
-      "autor": autor.toJson(),
-    };
 
-    final response = await client.post('/autores/save-update', body);
+    final response = await client.post('/autores/save-update', autor.toJson());
 
     if (response['response_code'] != null &&
         response['response_code'] >= 200 &&

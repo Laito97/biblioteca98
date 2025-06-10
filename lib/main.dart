@@ -15,15 +15,9 @@ import 'package:biblioteca97/views/navegacionview/navegacion_screen.dart';
 import 'package:provider/provider.dart';
 
 void main() {
-  final ApiClient apiClient = ApiClient();
-  final ApiService apiService = ApiService(client: apiClient);
-
   runApp(
-    MultiProvider(
-      providers: [
-        Provider<ApiService>.value(value: apiService), // Proveedor de ApiService
-        ChangeNotifierProvider<UsuarioProvider>(create: (_) => UsuarioProvider()), // Proveedor de usuario
-      ],
+    ChangeNotifierProvider(
+      create: (_) => UsuarioProvider(),
       child: MyApp(),
     ),
   );
