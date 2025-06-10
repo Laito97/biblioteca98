@@ -7,7 +7,7 @@ class Autor {
   final int? usuario_creacion_id;
 
   Autor({
-    required this.autor_id,
+    this.autor_id,
     required this.autor_nom,
     this.fecha_actualizacion,
     this.fecha_creacion,
@@ -19,15 +19,27 @@ class Autor {
     return Autor(
       autor_id: json['autor_id'],
       autor_nom: json['autor_nom'],
-      fecha_actualizacion: json['fecha_actualizacion'] != null
-          ? DateTime.tryParse(json['fecha_actualizacion'])
-          : null,
-      fecha_creacion: json['fecha_creacion'] != null
-          ? DateTime.tryParse(json['fecha_creacion'])
-          : null,
+      fecha_actualizacion:
+          json['fecha_actualizacion'] != null
+              ? DateTime.tryParse(json['fecha_actualizacion'])
+              : null,
+      fecha_creacion:
+          json['fecha_creacion'] != null
+              ? DateTime.tryParse(json['fecha_creacion'])
+              : null,
       usuario_actualizacion_id: json['usuario_actualizacion_id'],
       usuario_creacion_id: json['usuario_creacion_id'],
     );
   }
-}
 
+  Map<String, dynamic> toJson() {
+    return {
+      "autor_id": autor_id,
+      "autor_nom": autor_nom,
+      "fecha_actualizacion": fecha_actualizacion,
+      "fecha_creacion": fecha_creacion,
+      "usuario_actualizacion_id": usuario_actualizacion_id,
+      "usuario_creacion_id": usuario_creacion_id,
+    };
+  }
+}

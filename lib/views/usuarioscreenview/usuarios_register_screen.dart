@@ -14,6 +14,7 @@ class RegisterScreen extends StatefulWidget {
 
 class _RegisterScreenState extends State<RegisterScreen> {
   final _formKey = GlobalKey<FormState>();
+  List<TipoUsuario> listaTipoUsuarios = [];
   late ApiService _apiService;
 
   final TextEditingController _nombresController = TextEditingController();
@@ -27,10 +28,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
   bool isPasswordVisible = false;
 
   // Lista estática (maqueta) de tipos de usuario
-  final List<TipoUsuario> _tiposUsuario = [
-    TipoUsuario(id: 1, nombre: 'Administrador'),
-    TipoUsuario(id: 2, nombre: 'Bibliotecario'),
-    TipoUsuario(id: 3, nombre: 'Lector'),
+  
+  
+  List<TipoUsuario> _tiposUsuario = [
+    
   ];
   TipoUsuario? _selectedTipoUsuario;
 
@@ -38,6 +39,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   void initState() {
     super.initState();
     _apiService = ApiService(client: ApiClient());
+    _listTipUserV2();
   }
 
   @override
@@ -237,6 +239,18 @@ class _RegisterScreenState extends State<RegisterScreen> {
       ),
     );
   }
+
+Future<void> _listTipUserV2() async {
+    try {
+      listaTipoUsuarios = await _apiService.listTipUserV2();
+      _tiposUsuario = List.from(listaTipoUsuarios);
+      setState(() {});
+    } catch (e) {
+      print("Error al obtener usuarios: $e");
+    }
+  }
+
+
 
   Widget _buildTextField({
     required TextEditingController controller,

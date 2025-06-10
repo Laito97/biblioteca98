@@ -7,11 +7,13 @@ import 'package:biblioteca97/controllers/editorial_controller.dart';
 import 'package:biblioteca97/controllers/libro_controller.dart';
 import 'package:biblioteca97/controllers/prestamo_controller.dart';
 import 'package:biblioteca97/controllers/usuario_controller.dart';
+import 'package:biblioteca97/controllers/usuario_tipo_controller.dart';
 import 'package:biblioteca97/models/autor.dart';
 import 'package:biblioteca97/models/categoria.dart';
 import 'package:biblioteca97/models/editorial.dart';
 import 'package:biblioteca97/models/libro.dart';
 import 'package:biblioteca97/models/prestamo.dart';
+import 'package:biblioteca97/models/tipo_usuario.dart';
 import 'package:biblioteca97/models/usuario.dart';
 
 import '../models_ant/data_categoria.dart';
@@ -73,6 +75,23 @@ class ApiService {
       }
     } catch (e) {
       print("Error al obtener los usuarios: $e");
+      rethrow;
+    }
+  }
+
+  // Listar TipoUsuarios V2
+  Future<List<TipoUsuario>> listTipUserV2() async {
+    try {
+      final data = await client.get('/usuarios/list-tipo');
+      if (data != null) {
+        print("DATA RECIBIDA: $data");
+        final response = UsuarioTipoController.fromJson(data);
+        return response.tipousuarios;
+      } else {
+        return [];
+      }
+    } catch (e) {
+      print("Error al obtener los tipos de usuarios: $e");
       rethrow;
     }
   }
@@ -182,6 +201,31 @@ class ApiService {
       return false;
     }
   }
+
+//Guardar Autores v2
+   Future<bool> registrarAutorV2(Autor autor) async {
+  try {
+    final Map<String, dynamic> body = {
+      "autor": autor.toJson(),
+    };
+
+    final response = await client.post('/autores/save-update', body);
+
+    if (response['response_code'] != null &&
+        response['response_code'] >= 200 &&
+        response['response_code'] < 300) {
+      log("Autor creado: ${response['autor']}");
+      return true;
+    } else {
+      log("Error en el servidor: ${response.toString()}");
+      return false;
+    }
+  } catch (e) {
+    log("Error en registrarAutorV2: $e");
+    return false;
+  }
+}
+
 
   // ===================== LOGIN =====================
   Future<AdminUsuarioResponse?> login(String usuario, String contrasena) async {
