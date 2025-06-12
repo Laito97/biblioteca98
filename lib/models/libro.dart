@@ -20,21 +20,21 @@ class Libro{
   final Editorial? editorial;
 
 Libro({
-    required this.libro_id,
-    required this.libro_nom,
-    required this.anio_publicacion,
-    required this.descripcion,
-    required this.edicion,
-    required this.existencias,
-    required this.fecha_actualizacion,
-    required this.fecha_creacion,
-    required this.isbn,
-    required this.url_portada,
-    required this.usuario_actualizacion_id,
-    required this.usuario_creacion_id,
-    required this.autor,
-    required this.categoria,
-    required this.editorial,
+     this.libro_id,
+     this.libro_nom,
+     this.anio_publicacion,
+     this.descripcion,
+     this.edicion,
+     this.existencias,
+     this.fecha_actualizacion,
+     this.fecha_creacion,
+     this.isbn,
+     this.url_portada,
+     this.usuario_actualizacion_id,
+     this.usuario_creacion_id,
+     this.autor,
+     this.categoria,
+     this.editorial,
   });
 
   factory Libro.fromJson(Map<String, dynamic> json) {
@@ -60,4 +60,22 @@ Libro({
       editorial: Editorial.fromJson(json['editorial'] ?? {}),
     );
   }
+
+  Map<String, dynamic> toJson() {
+  return {
+    'libro_id': libro_id,
+    'libro_nom': libro_nom,
+    'anio_publicacion': anio_publicacion,
+    'descripcion': descripcion,
+    'edicion': edicion,
+    'existencias': existencias,
+    'isbn': isbn,
+    'url_portada': url_portada,
+    'usuario_actualizacion_id': usuario_actualizacion_id,
+    'usuario_creacion_id': usuario_creacion_id,
+    'categoria_id': categoria?.categoria_id,
+    'editorial_id': editorial?.editorial_id,
+    'autor_id': autor?.autor_id,
+  };
+}
 }

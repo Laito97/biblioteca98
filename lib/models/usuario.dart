@@ -2,14 +2,14 @@ import 'package:biblioteca97/models/persona.dart';
 import 'package:biblioteca97/models/tipo_usuario.dart';
 
 class Usuario {
-  final int usuarioId;
+  final int? usuarioId;
   final String? usuarioNombre;
   final Persona persona;
   final TipoUsuario tipoUsuario;
   final String? password;
 
   Usuario({
-    required this.usuarioId,
+    this.usuarioId,
      this.usuarioNombre,
     required this.tipoUsuario,
     required this.persona,

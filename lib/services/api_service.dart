@@ -223,6 +223,46 @@ class ApiService {
   }
 }
 
+//Guardar Editoriales v2
+   Future<bool> registrarEditorialV2(Editorial editorial) async {
+  try {
+
+    final response = await client.post('/editoriales/save-update', editorial.toJson());
+
+    if (response['response_code'] != null &&
+        response['response_code'] >= 200 &&
+        response['response_code'] < 300) {
+      log("Editorial creado: ${response['editorial']}");
+      return true;
+    } else {
+      log("Error en el servidor: ${response.toString()}");
+      return false;
+    }
+  } catch (e) {
+    log("Error en registrarAutorV2: $e");
+    return false;
+  }
+}
+
+// Guardar o actualizar libro
+  Future<bool> registrarLibroV2(Libro libro) async {
+    try {
+      final response = await client.post('/libros/save-update', libro.toJson());
+
+      if (response['response_code'] != null &&
+          response['response_code'] >= 200 &&
+          response['response_code'] < 300) {
+        log("Libro registrado: ${response['libro']}");
+        return true;
+      } else {
+        log("Error en el servidor: ${response.toString()}");
+        return false;
+      }
+    } catch (e) {
+      log("Error en registrarLibroV2: $e");
+      return false;
+    }
+  }
 
   // ===================== LOGIN =====================
   Future<AdminUsuarioResponse?> login(String usuario, String contrasena) async {

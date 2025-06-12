@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:biblioteca97/models/editorial.dart';
+import 'package:biblioteca97/services/api_service.dart';
+import 'package:biblioteca97/services/api_client.dart';
 
 class EditorialRegisterScreen extends StatefulWidget {
   const EditorialRegisterScreen({Key? key}) : super(key: key);
@@ -10,6 +13,13 @@ class EditorialRegisterScreen extends StatefulWidget {
 class _EditorialRegisterScreenState extends State<EditorialRegisterScreen> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _nombreController = TextEditingController();
+  late ApiService _apiService;
+
+  @override
+  void initState() {
+    super.initState();
+    _apiService = ApiService(client: ApiClient());
+  }
 
   @override
   void dispose() {
@@ -17,17 +27,28 @@ class _EditorialRegisterScreenState extends State<EditorialRegisterScreen> {
     super.dispose();
   }
 
-  void _registrarEditorial() {
+  void _registrarEditorial() async {
     if (_formKey.currentState!.validate()) {
       final nombre = _nombreController.text.trim();
-      // Aquí puedes agregar la lógica para enviar datos a la API o base de datos
-      print('Editorial registrada: $nombre');
 
-      // Mostrar mensaje o navegar atrás
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Editorial "$nombre" registrada correctamente')),
+      final editorial = Editorial(
+        editorial_id: null,
+        editorial_nom: nombre,
       );
-      Navigator.pop(context);
+
+      final registrado = await _apiService.registrarEditorialV2(editorial);
+
+      if (registrado) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Editorial "$nombre" registrada correctamente')),
+        );
+        _nombreController.clear();
+        Navigator.pop(context);
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('No se pudo registrar la editorial')),
+        );
+      }
     }
   }
 
@@ -50,14 +71,12 @@ class _EditorialRegisterScreenState extends State<EditorialRegisterScreen> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                // Imagen arriba del formulario
                 Image.asset(
                   'assets/agregar_usuario.png',
                   width: 150,
                   height: 150,
                 ),
                 const SizedBox(height: 20),
-
                 TextFormField(
                   controller: _nombreController,
                   decoration: InputDecoration(
@@ -77,9 +96,7 @@ class _EditorialRegisterScreenState extends State<EditorialRegisterScreen> {
                     return null;
                   },
                 ),
-
                 const SizedBox(height: 30),
-
                 SizedBox(
                   width: double.infinity,
                   height: 50,

@@ -76,9 +76,6 @@ class _AutoresRegisterScreenState extends State<AutoresRegisterScreen> {
                   height: 120,
                 ),
                 const SizedBox(height: 10),
-                usuarioProvider == null
-                    ? const Center(child: Text('No hay usuario'))
-                    : Center(child: Text('Hola ${usuarioProvider.usuarioId}')),
                 const SizedBox(height: 30),
                 TextFormField(
                   controller: _nombreAutorController,

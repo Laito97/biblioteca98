@@ -5,7 +5,7 @@ class Editorial {
 
 
   Editorial({
-    required this.editorial_id,
+    this.editorial_id,
     required this.editorial_nom,
 
   });
@@ -15,6 +15,13 @@ class Editorial {
       editorial_id: json['editorial_id'],
       editorial_nom: json['editorial_nom'],
     );
+  }
+
+    Map<String, dynamic> toJson() {
+    return {
+      "editorial_id": editorial_id,
+      "editorial_nom": editorial_nom,
+    };
   }
 }
 
