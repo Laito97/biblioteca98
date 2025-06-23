@@ -13,6 +13,7 @@ import 'package:biblioteca97/models/categoria.dart';
 import 'package:biblioteca97/models/editorial.dart';
 import 'package:biblioteca97/models/libro.dart';
 import 'package:biblioteca97/models/prestamo.dart';
+import 'package:biblioteca97/models/prestamo_estado.dart';
 import 'package:biblioteca97/models/tipo_usuario.dart';
 import 'package:biblioteca97/models/usuario.dart';
 
@@ -182,6 +183,24 @@ class ApiService {
     }
   }
 
+  // Listar estados prestamos V2
+
+  Future<List<PrestamoEstado>> listEstadosPrestamoV2() async {
+  try {
+    final data = await client.get('/prestamo-estado/list'); // Ruta correcta en tu backend
+    if (data != null && data['estados'] != null && data['estados'] is List) {
+      final estadosList = data['estados'] as List;
+      return estadosList.map((e) => PrestamoEstado.fromJson(e)).toList();
+    } else {
+      return [];
+    }
+  } catch (e) {
+    print("Error al obtener los estados de préstamo: $e");
+    rethrow;
+  }
+}
+
+
   // Guardar Usuarios V2
   Future<bool> registrarUsuarioV2(Usuario usuario) async {
     try {
@@ -244,25 +263,45 @@ class ApiService {
   }
 }
 
-// Guardar o actualizar libro
-  Future<bool> registrarLibroV2(Libro libro) async {
-    try {
-      final response = await client.post('/libros/save-update', libro.toJson());
+  // Guardar o actualizar libro
+    Future<bool> registrarLibroV2(Libro libro) async {
+      try {
+        final response = await client.post('/libros/save-update', libro.toJson());
 
-      if (response['response_code'] != null &&
-          response['response_code'] >= 200 &&
-          response['response_code'] < 300) {
-        log("Libro registrado: ${response['libro']}");
-        return true;
-      } else {
-        log("Error en el servidor: ${response.toString()}");
+        if (response['response_code'] != null &&
+            response['response_code'] >= 200 &&
+            response['response_code'] < 300) {
+          log("Libro registrado: ${response['libro']}");
+          return true;
+        } else {
+          log("Error en el servidor: ${response.toString()}");
+          return false;
+        }
+      } catch (e) {
+        log("Error en registrarLibroV2: $e");
         return false;
       }
-    } catch (e) {
-      log("Error en registrarLibroV2: $e");
+    }
+
+  Future<bool> registrarPrestamoV2(Map<String, dynamic> prestamoJson) async {
+  try {
+    final response = await client.post('/prestamos/save-update', prestamoJson);
+
+    if (response['response_code'] != null &&
+        response['response_code'] >= 200 &&
+        response['response_code'] < 300) {
+      log("Préstamo registrado: ${response['prestamo']}");
+      return true;
+    } else {
+      log("Error en el servidor al registrar préstamo: ${response.toString()}");
       return false;
     }
+  } catch (e) {
+    log("Error en registrarPrestamoV2: $e");
+    return false;
   }
+}
+
 
   // ===================== LOGIN =====================
   Future<AdminUsuarioResponse?> login(String usuario, String contrasena) async {

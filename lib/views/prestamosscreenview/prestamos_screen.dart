@@ -1,12 +1,11 @@
-import 'package:biblioteca97/services/api_client.dart';
-import 'package:biblioteca97/views/navegacionview/navegacion_drawer.dart';
 import 'package:flutter/material.dart';
+
 import 'package:biblioteca97/models/prestamo.dart';
 import 'package:biblioteca97/models_ant/data_prestamo.dart';
 import 'package:biblioteca97/services/api_service.dart';
-import 'package:provider/provider.dart';
+import 'package:biblioteca97/services/api_client.dart';
+import 'package:biblioteca97/views/navegacionview/navegacion_drawer.dart';
 import 'PrestamoItemWidget.dart';
-import 'package:biblioteca97/views/navegacionview/navegacion_screen.dart' as custom_nav;
 
 class PrestamosScreen extends StatefulWidget {
   const PrestamosScreen({super.key});
@@ -19,16 +18,10 @@ class _PrestamosScreenState extends State<PrestamosScreen> {
   late ApiService _apiService;
   List<Prestamo> prestamos = [];
   List<Prestamo> filteredPrestamos = [];
-  TextEditingController searchController = TextEditingController();
+  final TextEditingController searchController = TextEditingController();
   bool isLoading = true;
   bool hasError = false;
 
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    _apiService = Provider.of<ApiService>(context, listen: false);
-  }
-  
   @override
   void initState() {
     super.initState();
@@ -56,31 +49,31 @@ class _PrestamosScreenState extends State<PrestamosScreen> {
     }
   }
 
-void _filterPrestamos(String query) {
-  final resultados = prestamos.where((prestamo) {
-    final id = prestamo.prestamo_id?.toString() ?? '';
-    return id.toLowerCase().contains(query.toLowerCase());
-  }).toList();
+  void _filterPrestamos(String query) {
+    final resultados = prestamos.where((prestamo) {
+      final id = prestamo.prestamo_id?.toString() ?? '';
+      return id.toLowerCase().contains(query.toLowerCase());
+    }).toList();
 
-  setState(() {
-    filteredPrestamos = resultados;
-  });
-}
+    setState(() {
+      filteredPrestamos = resultados;
+    });
+  }
 
   void _onDeletePrestamo(DataPrestamo prestamo) async {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text("Confirmar eliminación"),
+        title: const Text("Confirmar eliminación"),
         content: Text("¿Estás seguro de eliminar el préstamo con ID '${prestamo.idPrestamo}'?"),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: Text("Cancelar"),
+            child: const Text("Cancelar"),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
-            child: Text("Eliminar"),
+            child: const Text("Eliminar"),
           ),
         ],
       ),
@@ -91,11 +84,11 @@ void _filterPrestamos(String query) {
       if (success) {
         await _fetchPrestamos();
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Préstamo eliminado')),
+          const SnackBar(content: Text('Préstamo eliminado')),
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error al eliminar el préstamo')),
+          const SnackBar(content: Text('Error al eliminar el préstamo')),
         );
       }
     }
@@ -105,21 +98,30 @@ void _filterPrestamos(String query) {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Préstamos'),
+        title: const Text('Préstamos'),
         backgroundColor: Colors.red,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.add),
+            tooltip: 'Agregar préstamo',
+            onPressed: () {
+              Navigator.pushNamed(context, '/registrar-prestamo');
+            },
+          ),
+        ],
       ),
       drawer: NavegacionDrawer(),
       body: isLoading
-          ? Center(child: CircularProgressIndicator())
+          ? const Center(child: CircularProgressIndicator())
           : hasError
-              ? Center(child: Text('Error al cargar los préstamos.'))
+              ? const Center(child: Text('Error al cargar los préstamos.'))
               : Column(
                   children: [
                     Padding(
                       padding: const EdgeInsets.all(8.0),
                       child: TextField(
                         controller: searchController,
-                        decoration: InputDecoration(
+                        decoration: const InputDecoration(
                           labelText: 'Buscar por ID de préstamo',
                           prefixIcon: Icon(Icons.search),
                           border: OutlineInputBorder(),
@@ -129,7 +131,7 @@ void _filterPrestamos(String query) {
                     ),
                     Expanded(
                       child: filteredPrestamos.isEmpty
-                          ? Center(child: Text('No se encontraron resultados'))
+                          ? const Center(child: Text('No se encontraron resultados'))
                           : ListView.builder(
                               itemCount: filteredPrestamos.length,
                               itemBuilder: (context, index) {

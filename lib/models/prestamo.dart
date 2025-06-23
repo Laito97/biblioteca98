@@ -2,7 +2,7 @@ import 'package:biblioteca97/models/libro.dart';
 import 'package:biblioteca97/models/prestamo_estado.dart';
 import 'package:biblioteca97/models/usuario.dart';
 
-class Prestamo{
+class Prestamo {
   final int? prestamo_id;
   final DateTime? fecha_actualizacion;
   final DateTime? fecha_creacion;
@@ -12,7 +12,7 @@ class Prestamo{
   final PrestamoEstado prestamo_estado;
   final int usuario_creacion_id;
   final Usuario usuario_solicita_prestamo;
-Prestamo({
+  Prestamo({
     required this.prestamo_id,
     required this.fecha_actualizacion,
     required this.fecha_creacion,
@@ -22,28 +22,45 @@ Prestamo({
     required this.prestamo_estado,
     required this.usuario_creacion_id,
     required this.usuario_solicita_prestamo,
-
   });
 
   factory Prestamo.fromJson(Map<String, dynamic> json) {
     return Prestamo(
       prestamo_id: json['prestamo_id'] ?? 0,
-      fecha_actualizacion: json['fecha_actualizacion'] != null
-          ? DateTime.tryParse(json['fecha_actualizacion'])
-          : null,
-      fecha_creacion: json['fecha_creacion'] != null
-          ? DateTime.tryParse(json['fecha_creacion'])
-          : null,
-      fecha_devolucion_prestamo: json['fecha_devolucion_prestamo'] != null
-          ? DateTime.tryParse(json['fecha_devolucion_prestamo'])
-          : null,
-      fecha_solicitud_prestamo: json['fecha_solicitud_prestamo'] != null
-          ? DateTime.tryParse(json['fecha_solicitud_prestamo'])
-          : null,
+      fecha_actualizacion:
+          json['fecha_actualizacion'] != null
+              ? DateTime.tryParse(json['fecha_actualizacion'])
+              : null,
+      fecha_creacion:
+          json['fecha_creacion'] != null
+              ? DateTime.tryParse(json['fecha_creacion'])
+              : null,
+      fecha_devolucion_prestamo:
+          json['fecha_devolucion_prestamo'] != null
+              ? DateTime.tryParse(json['fecha_devolucion_prestamo'])
+              : null,
+      fecha_solicitud_prestamo:
+          json['fecha_solicitud_prestamo'] != null
+              ? DateTime.tryParse(json['fecha_solicitud_prestamo'])
+              : null,
       libro: Libro.fromJson(json['libro'] ?? {}),
       prestamo_estado: PrestamoEstado.fromJson(json['prestamo_estado'] ?? {}),
       usuario_creacion_id: json['usuario_creacion_id'] ?? 0,
-      usuario_solicita_prestamo: Usuario.fromJson(json['usuario_solicita_prestamo'] ?? {}),
+      usuario_solicita_prestamo: Usuario.fromJson(
+        json['usuario_solicita_prestamo'] ?? {},
+      ),
     );
+  }
+
+  Map<String, dynamic> toJsonParaRegistro({required int usuarioApruebaId}) {
+    return {
+      "libro_id": libro.libro_id,
+      "usuario_solicita_prestamo": usuario_solicita_prestamo.usuarioId,
+      "usuario_aprueba_prestamo": usuarioApruebaId,
+      "fecha_solicitud_prestamo": DateTime.now().toIso8601String(),
+      "fecha_devolucion_prestamo": fecha_devolucion_prestamo?.toIso8601String(),
+      "prestamo_estado_id": prestamo_estado.estado_id,
+      "usuario_creacion_id": usuario_creacion_id,
+    };
   }
 }
