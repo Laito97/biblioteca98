@@ -1,10 +1,12 @@
-import 'package:flutter/material.dart';
 import 'package:biblioteca97/models/editorial.dart';
 import 'package:biblioteca97/services/api_service.dart';
-import 'package:biblioteca97/services/api_client.dart';
+import 'package:flutter/material.dart';
+import '../../services/api_client.dart';
 
 class EditorialRegisterScreen extends StatefulWidget {
-  const EditorialRegisterScreen({Key? key}) : super(key: key);
+  final Editorial? editorialEditar;
+
+  const EditorialRegisterScreen({Key? key, this.editorialEditar}) : super(key: key);
 
   @override
   State<EditorialRegisterScreen> createState() => _EditorialRegisterScreenState();
@@ -15,10 +17,16 @@ class _EditorialRegisterScreenState extends State<EditorialRegisterScreen> {
   final TextEditingController _nombreController = TextEditingController();
   late ApiService _apiService;
 
+  bool get isEditMode => widget.editorialEditar != null;
+
   @override
   void initState() {
     super.initState();
     _apiService = ApiService(client: ApiClient());
+
+    if (isEditMode) {
+      _nombreController.text = widget.editorialEditar!.editorial_nom ?? '';
+    }
   }
 
   @override
@@ -27,28 +35,35 @@ class _EditorialRegisterScreenState extends State<EditorialRegisterScreen> {
     super.dispose();
   }
 
-  void _registrarEditorial() async {
-    if (_formKey.currentState!.validate()) {
-      final nombre = _nombreController.text.trim();
+  Future<void> _guardarEditorial() async {
+    if (!_formKey.currentState!.validate()) return;
 
-      final editorial = Editorial(
-        editorial_id: null,
-        editorial_nom: nombre,
+    final editorial = Editorial(
+      editorial_id: widget.editorialEditar?.editorial_id,
+      editorial_nom: _nombreController.text.trim(),
+    );
+
+    bool resultado = false;
+
+    if (isEditMode) {
+      resultado = await _apiService.registrarEditorialV2(editorial); // Asegúrate de tener este método
+    } else {
+      resultado = await _apiService.registrarEditorialV2(editorial);
+    }
+
+    if (resultado) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(isEditMode
+              ? 'Editorial actualizada correctamente'
+              : 'Editorial registrada correctamente'),
+        ),
       );
-
-      final registrado = await _apiService.registrarEditorialV2(editorial);
-
-      if (registrado) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Editorial "$nombre" registrada correctamente')),
-        );
-        _nombreController.clear();
-        Navigator.pop(context);
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('No se pudo registrar la editorial')),
-        );
-      }
+      Navigator.pop(context);
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('No se pudo guardar la editorial')),
+      );
     }
   }
 
@@ -56,7 +71,7 @@ class _EditorialRegisterScreenState extends State<EditorialRegisterScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Registrar Editorial'),
+        title: Text(isEditMode ? 'Editar Editorial' : 'Registrar Editorial'),
         backgroundColor: Colors.red,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
@@ -108,10 +123,10 @@ class _EditorialRegisterScreenState extends State<EditorialRegisterScreen> {
                         borderRadius: BorderRadius.circular(32),
                       ),
                     ),
-                    onPressed: _registrarEditorial,
-                    child: const Text(
-                      'REGISTRAR',
-                      style: TextStyle(fontWeight: FontWeight.bold),
+                    onPressed: _guardarEditorial,
+                    child: Text(
+                      isEditMode ? 'ACTUALIZAR' : 'REGISTRAR',
+                      style: const TextStyle(fontWeight: FontWeight.bold),
                     ),
                   ),
                 ),

@@ -1,5 +1,4 @@
 import 'package:biblioteca97/models/autor.dart';
-import 'package:biblioteca97/models/usuario.dart';
 import 'package:biblioteca97/services/api_service.dart';
 import 'package:flutter/material.dart';
 import '../../services/api_client.dart';
@@ -7,7 +6,9 @@ import 'package:biblioteca97/utils/usuario_provider.dart';
 import 'package:provider/provider.dart';
 
 class AutoresRegisterScreen extends StatefulWidget {
-  const AutoresRegisterScreen({Key? key}) : super(key: key);
+  final Autor? autorEditar;
+
+  const AutoresRegisterScreen({Key? key, this.autorEditar}) : super(key: key);
 
   @override
   State<AutoresRegisterScreen> createState() => _AutoresRegisterScreenState();
@@ -18,10 +19,16 @@ class _AutoresRegisterScreenState extends State<AutoresRegisterScreen> {
   final TextEditingController _nombreAutorController = TextEditingController();
   late ApiService _apiService;
 
+  bool get isEditMode => widget.autorEditar != null;
+
   @override
   void initState() {
     super.initState();
     _apiService = ApiService(client: ApiClient());
+
+    if (isEditMode) {
+      _nombreAutorController.text = widget.autorEditar!.autor_nom ?? '';
+    }
   }
 
   void _showDialog(String mensaje) {
@@ -36,6 +43,9 @@ class _AutoresRegisterScreenState extends State<AutoresRegisterScreen> {
               child: const Text("OK"),
               onPressed: () {
                 Navigator.of(context).pop();
+                if (mensaje.contains('éxito')) {
+                  Navigator.of(context).pop(); // Salir de la pantalla tras éxito
+                }
               },
             ),
           ],
@@ -44,19 +54,53 @@ class _AutoresRegisterScreenState extends State<AutoresRegisterScreen> {
     );
   }
 
+  Future<void> _guardarAutor() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    final usuarioProvider = Provider.of<UsuarioProvider>(context, listen: false);
+    final usuarioId = usuarioProvider.usuario?.usuarioId;
+
+    // Crear objeto Autor con los campos necesarios para el backend
+    Autor autor = Autor(
+      autor_id: widget.autorEditar?.autor_id,
+      autor_nom: _nombreAutorController.text.trim(),
+      usuario_creacion_id: usuarioId,
+    );
+
+    try {
+      bool resultado = await _apiService.registrarAutorV2(autor);
+
+      _showDialog(
+        resultado
+            ? (isEditMode ? "Autor actualizado con éxito" : "Autor registrado con éxito")
+            : (isEditMode ? "No se pudo actualizar el autor" : "No se pudo registrar el autor"),
+      );
+
+      if (resultado && !isEditMode) {
+        _nombreAutorController.clear();
+      }
+    } catch (e) {
+      _showDialog("Error: $e");
+    }
+  }
+
+  @override
+  void dispose() {
+    _nombreAutorController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
-    final usuarioProvider = Provider.of<UsuarioProvider>(context).usuario;
+    final title = isEditMode ? "Editar Autor" : "Registrar Autor";
 
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text("Registrar Autor"),
+        title: Text(title),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () {
-            Navigator.pop(context);
-          },
+          onPressed: () => Navigator.pop(context),
         ),
         backgroundColor: Colors.red,
         foregroundColor: Colors.white,
@@ -75,7 +119,6 @@ class _AutoresRegisterScreenState extends State<AutoresRegisterScreen> {
                   width: 200,
                   height: 120,
                 ),
-                const SizedBox(height: 10),
                 const SizedBox(height: 30),
                 TextFormField(
                   controller: _nombreAutorController,
@@ -108,36 +151,10 @@ class _AutoresRegisterScreenState extends State<AutoresRegisterScreen> {
                         borderRadius: BorderRadius.circular(32),
                       ),
                     ),
-                    onPressed: () async {
-                      if (_formKey.currentState!.validate()) {
-                        final autor = Autor(
-                          autor_nom: _nombreAutorController.text,
-                          usuario_creacion_id: usuarioProvider?.usuarioId,
-                        );
-
-                        print('ASASS' + _nombreAutorController.text);
-                        print(
-                          'ASASS2 ${usuarioProvider?.usuarioId.toString()}',
-                        );
-
-                        try {
-                          bool registrado = await _apiService.registrarAutorV2(
-                            autor,
-                          );
-                          _showDialog(
-                            registrado
-                                ? "Autor registrado con éxito"
-                                : "No se pudo registrar el autor",
-                          );
-                          if (registrado) _nombreAutorController.clear();
-                        } catch (e) {
-                          _showDialog("Error: $e");
-                        }
-                      }
-                    },
-                    child: const Text(
-                      'REGISTRAR AUTOR',
-                      style: TextStyle(fontWeight: FontWeight.bold),
+                    onPressed: _guardarAutor,
+                    child: Text(
+                      isEditMode ? 'ACTUALIZAR AUTOR' : 'REGISTRAR AUTOR',
+                      style: const TextStyle(fontWeight: FontWeight.bold),
                     ),
                   ),
                 ),

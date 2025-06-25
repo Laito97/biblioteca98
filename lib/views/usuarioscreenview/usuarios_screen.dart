@@ -8,7 +8,6 @@ import 'package:biblioteca97/views/navegacionview/navegacion_screen.dart'
     as custom_nav;
 import 'usuarios_register_screen.dart';
 
-
 class UsuariosScreen extends StatefulWidget {
   @override
   _UsuariosScreenState createState() => _UsuariosScreenState();
@@ -18,12 +17,7 @@ class _UsuariosScreenState extends State<UsuariosScreen> {
   late ApiService _apiService;
   List<Usuario> listaUsuarios = [];
   List<Usuario> usuariosFiltrados = [];
-  bool isEditing = false;
-  late Usuario usuarioEditando;
 
-  TextEditingController idController = TextEditingController();
-  TextEditingController nomController = TextEditingController();
-  TextEditingController contrasenaController = TextEditingController();
   TextEditingController searchController = TextEditingController();
 
   @override
@@ -43,23 +37,43 @@ class _UsuariosScreenState extends State<UsuariosScreen> {
     }
   }
 
-  void _showAddUpdateDialog() {
+  void _showUserOptionsDialog(Usuario usuario) {
     showDialog(
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Text(isEditing ? 'Editar Usuario' : 'Agregar Usuario'),
-          content: _buildForm(),
-          actions: <Widget>[
+          title: Text('Opciones para ${usuario.persona?.nombres ?? 'Usuario'}'),
+          content: Text('Seleccione una acción:'),
+          actions: [
             TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: Text('Cancelar'),
+              onPressed: () {
+                Navigator.pop(context);
+                // Aquí solo maqueta, no eliminará realmente
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Función eliminar no implementada')),
+                );
+              },
+              child: Text('Eliminar'),
             ),
             TextButton(
               onPressed: () {
-                // isEditing ? _updateUsuario() : _addUsuario();
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => RegisterScreen(
+                      usuarioId: usuario.usuarioId,
+                    ),
+                  ),
+                ).then((value) {
+                  _fetchUsers(); // refrescar al volver
+                });
               },
-              child: Text(isEditing ? 'Actualizar' : 'Agregar'),
+              child: Text('Editar'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text('Cancelar'),
             ),
           ],
         );
@@ -67,29 +81,6 @@ class _UsuariosScreenState extends State<UsuariosScreen> {
     );
   }
 
-  Widget _buildForm() {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: <Widget>[
-        TextField(
-          controller: idController,
-          decoration: InputDecoration(labelText: 'ID Usuario'),
-          readOnly: isEditing,
-        ),
-        TextField(
-          controller: nomController,
-          decoration: InputDecoration(labelText: 'Nombre Usuario'),
-        ),
-        TextField(
-          controller: contrasenaController,
-          decoration: InputDecoration(labelText: 'Contraseña'),
-          obscureText: true,
-        ),
-      ],
-    );
-  }
-
-  
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -105,12 +96,14 @@ class _UsuariosScreenState extends State<UsuariosScreen> {
                 MaterialPageRoute(
                   builder: (context) => const RegisterScreen(),
                 ),
-              );
+              ).then((value) {
+                _fetchUsers();
+              });
             },
           ),
         ],
       ),
-      drawer: NavegacionDrawer(), // Se usa tu Drawer
+      drawer: NavegacionDrawer(),
       body: Column(
         children: [
           Padding(
@@ -122,23 +115,24 @@ class _UsuariosScreenState extends State<UsuariosScreen> {
                 prefixIcon: Icon(Icons.search),
                 border: OutlineInputBorder(),
               ),
-              // onChanged: _filtrarUsuarios,
+              // Puedes implementar filtrado aquí si quieres
             ),
           ),
           Expanded(
             child: usuariosFiltrados.isEmpty
                 ? Center(child: Text('No se encontraron usuarios'))
                 : ListView.builder(
-              itemCount: usuariosFiltrados.length,
-              itemBuilder: (context, index) {
-                final usuario = usuariosFiltrados[index];
-                return MenuItemWidget(
-                  usuario: usuario,
-                 // onEdit: editarUsuario,
-                 // onDelete: eliminarUsuario,
-                );
-              },
-            ),
+                    itemCount: usuariosFiltrados.length,
+                    itemBuilder: (context, index) {
+                      final usuario = usuariosFiltrados[index];
+                      return GestureDetector(
+                        onTap: () => _showUserOptionsDialog(usuario),
+                        child: MenuItemWidget(
+                          usuario: usuario,
+                        ),
+                      );
+                    },
+                  ),
           ),
         ],
       ),

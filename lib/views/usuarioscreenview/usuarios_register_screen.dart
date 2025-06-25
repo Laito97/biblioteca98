@@ -6,7 +6,9 @@ import 'package:flutter/material.dart';
 import '../../services/api_client.dart';
 
 class RegisterScreen extends StatefulWidget {
-  const RegisterScreen({Key? key}) : super(key: key);
+  final int? usuarioId; // Parámetro opcional para editar
+
+  const RegisterScreen({Key? key, this.usuarioId}) : super(key: key);
 
   @override
   State<RegisterScreen> createState() => _RegisterScreenState();
@@ -27,26 +29,62 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   bool isPasswordVisible = false;
 
-  // Lista estática (maqueta) de tipos de usuario
-  
-  
-  List<TipoUsuario> _tiposUsuario = [
-    
-  ];
+  List<TipoUsuario> _tiposUsuario = [];
   TipoUsuario? _selectedTipoUsuario;
+
+  bool _isEditing = false;
 
   @override
   void initState() {
     super.initState();
     _apiService = ApiService(client: ApiClient());
     _listTipUserV2();
+
+    if (widget.usuarioId != null) {
+      _isEditing = true;
+      _cargarDatosUsuario(widget.usuarioId!);
+    }
+  }
+
+  Future<void> _cargarDatosUsuario(int id) async {
+    try {
+      Usuario usuario = await _apiService.getUsuarioById(id);
+      _nombresController.text = usuario.persona?.nombres ?? '';
+      _apellidosController.text = usuario.persona?.apellidos ?? '';
+      _telefonoController.text = usuario.persona?.numContacto.toString() ?? '';
+      _correoController.text = usuario.persona?.correo ?? '';
+      _dniController.text = usuario.persona?.dni ?? '';
+      _direccionController.text = usuario.persona?.direccion ?? '';
+      _passwordController.text = usuario.password ?? '';
+
+      final tipo = _tiposUsuario.firstWhere(
+        (t) => t.id == usuario.tipoUsuario?.id,
+        orElse: () => TipoUsuario(id: -1, nombre: 'No definido'),
+      );
+
+      setState(() {
+        _selectedTipoUsuario = (tipo.id == -1) ? null : tipo;
+      });
+    } catch (e) {
+      print("Error al cargar usuario: $e");
+    }
+  }
+
+  Future<void> _listTipUserV2() async {
+    try {
+      listaTipoUsuarios = await _apiService.listTipUserV2();
+      _tiposUsuario = List.from(listaTipoUsuarios);
+      setState(() {});
+    } catch (e) {
+      print("Error al obtener tipos de usuario: $e");
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Registro"),
+        title: Text(_isEditing ? "Editar Usuario" : "Registro"),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
@@ -126,9 +164,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     prefixIcon: const Icon(Icons.lock),
                     suffixIcon: IconButton(
                       icon: Icon(
-                        isPasswordVisible
-                            ? Icons.visibility_off
-                            : Icons.visibility,
+                        isPasswordVisible ? Icons.visibility_off : Icons.visibility,
                       ),
                       onPressed: () {
                         setState(() {
@@ -146,7 +182,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 ),
                 const SizedBox(height: 10),
 
-                // ComboBox de tipo de usuario (maqueta)
                 DropdownButtonFormField<TipoUsuario>(
                   value: _selectedTipoUsuario,
                   hint: const Text("Seleccione tipo de usuario"),
@@ -195,39 +230,46 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         final persona = Persona(
                           nombres: _nombresController.text,
                           apellidos: _apellidosController.text,
-                          numContacto:
-                              int.tryParse(_telefonoController.text) ?? 0,
+                          numContacto: int.tryParse(_telefonoController.text) ?? 0,
                           correo: _correoController.text,
                           dni: _dniController.text,
                           direccion: _direccionController.text,
                         );
 
-                        final tipoUsuario =
-                            _selectedTipoUsuario ?? TipoUsuario(id: 1);
+                        final tipoUsuario = _selectedTipoUsuario ?? TipoUsuario(id: 1);
 
                         final usuario = Usuario(
-                          usuarioId: 0,
+                          usuarioId: widget.usuarioId ?? 0,
                           persona: persona,
                           tipoUsuario: tipoUsuario,
                           password: _passwordController.text,
                         );
 
                         try {
-                          bool registrado = await _apiService
-                              .registrarUsuarioV2(usuario);
+                          bool exito;
+                          if (_isEditing) {
+                            exito = await _apiService.actualizarUsuarioV2(usuario);
+                          } else {
+                            exito = await _apiService.registrarUsuarioV2(usuario);
+                          }
+
                           _showDialog(
-                            registrado
-                                ? "Usuario registrado con éxito"
-                                : "No se pudo registrar el usuario",
+                            exito
+                                ? (_isEditing
+                                    ? "Usuario actualizado con éxito"
+                                    : "Usuario registrado con éxito")
+                                : (_isEditing
+                                    ? "No se pudo actualizar el usuario"
+                                    : "No se pudo registrar el usuario"),
                           );
                         } catch (e) {
                           _showDialog("Error: $e");
                         }
                       }
                     },
-                    child: const Text(
-                      'Registrar',
-                      style: TextStyle(fontWeight: FontWeight.bold),
+                    child: Text(
+                      _isEditing ? 'Actualizar' : 'Registrar',
+                      style: const TextStyle(fontWeight: FontWeight.bold),
                     ),
                   ),
                 ),
@@ -239,18 +281,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
       ),
     );
   }
-
-Future<void> _listTipUserV2() async {
-    try {
-      listaTipoUsuarios = await _apiService.listTipUserV2();
-      _tiposUsuario = List.from(listaTipoUsuarios);
-      setState(() {});
-    } catch (e) {
-      print("Error al obtener usuarios: $e");
-    }
-  }
-
-
 
   Widget _buildTextField({
     required TextEditingController controller,
@@ -290,8 +320,11 @@ Future<void> _listTipUserV2() async {
           TextButton(
             onPressed: () {
               Navigator.pop(context);
-              if (message.contains("registrado con éxito")) {
+              if (message.contains("éxito")) {
                 _limpiarFormulario();
+                if (_isEditing) {
+                  Navigator.pop(context); // salir de editar y volver atrás
+                }
               }
             },
             child: const Text("OK"),

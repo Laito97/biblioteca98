@@ -221,6 +221,32 @@ class ApiService {
     }
   }
 
+  //actualizar usuarios
+  Future<bool> actualizarUsuarioV2(Usuario usuario) async {
+  // Reutiliza el mismo endpoint POST para crear o actualizar según usuarioId
+  try {
+    bool resultado = await registrarUsuarioV2(usuario);
+    return resultado;
+  } catch (e) {
+    print("Error al actualizar usuario: $e");
+    return false;
+  }
+}
+
+//obetener usuario por id
+
+Future<Usuario> getUsuarioById(int id) async {
+  final data = await client.get('/usuarios/$id');  // Esto devuelve Map<String, dynamic>
+  
+  // Suponiendo que la respuesta tiene el usuario dentro de alguna llave, por ejemplo 'usuario'
+  if (data.containsKey('usuario')) {
+    return Usuario.fromJson(data['usuario']);
+  } else {
+    throw Exception('Usuario no encontrado');
+  }
+}
+
+
 //Guardar Autores v2
    Future<bool> registrarAutorV2(Autor autor) async {
   try {
@@ -301,6 +327,17 @@ class ApiService {
     return false;
   }
 }
+
+//autor buscar por id
+Future<Autor> getAutorById(String id) async {
+  final data = await client.get('/autores/$id');
+  if (data.containsKey('autor')) {
+    return Autor.fromJson(data['autor']);
+  } else {
+    throw Exception('Autor no encontrado');
+  }
+}
+
 
 
   // ===================== LOGIN =====================

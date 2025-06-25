@@ -3,8 +3,8 @@ import 'dart:convert';
 
 // ApiClient centralizado que realiza las peticiones
 class ApiClient {
- final String host = 'http://192.168.1.5:3000/api/biblioteca_v1';  // Base de la API
-  //final String host = 'http://192.168.18.38:3000/api/biblioteca_v1';  // Base de la API
+ final String host = 'http://192.168.1.29:3000/api/biblioteca_v1';  // Base de la API
+//final String host = 'http://10.83.8.58:3000/api/biblioteca_v1';  // Base de la API
   //final String host = 'http://10.83.9.238:3000/api/biblioteca_v1';
   //final String host = 'http://10.83.9.47:3000/api/biblioteca_v1';
 
