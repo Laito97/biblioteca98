@@ -1,3 +1,4 @@
+import 'package:biblioteca97/utils/usuario_provider.dart';
 import 'package:biblioteca97/views/navegacionview/navegacion_drawer.dart';
 import 'package:flutter/material.dart';
 import 'package:biblioteca97/models/usuario.dart';
@@ -7,6 +8,7 @@ import 'MenuItemWidget.dart';
 import 'package:biblioteca97/views/navegacionview/navegacion_screen.dart'
     as custom_nav;
 import 'usuarios_register_screen.dart';
+import 'package:provider/provider.dart';
 
 class UsuariosScreen extends StatefulWidget {
   @override
@@ -46,12 +48,25 @@ class _UsuariosScreenState extends State<UsuariosScreen> {
           content: Text('Seleccione una acción:'),
           actions: [
             TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-                // Aquí solo maqueta, no eliminará realmente
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Función eliminar no implementada')),
+              onPressed: () async {
+                final usuarioProvider = Provider.of<UsuarioProvider>(
+                  context,
+                  listen: false,
                 );
+
+                usuario.usuario_actualizacion_id =
+                    usuarioProvider.usuario!.usuarioId;
+
+                Usuario response = await _apiService.deleteUsuarioById(
+                  usuario.usuarioId,
+                  usuario,
+                );
+
+                if (response.usuarioId != null) {
+                  _showDialog("Usuario eliminado con éxito");
+                } else {
+                  _showDialog("Ocurrió un error");
+                }
               },
               child: Text('Eliminar'),
             ),
@@ -61,9 +76,9 @@ class _UsuariosScreenState extends State<UsuariosScreen> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => RegisterScreen(
-                      usuarioId: usuario.usuarioId,
-                    ),
+                    builder:
+                        (context) =>
+                            RegisterScreen(usuarioId: usuario.usuarioId),
                   ),
                 ).then((value) {
                   _fetchUsers(); // refrescar al volver
@@ -81,6 +96,25 @@ class _UsuariosScreenState extends State<UsuariosScreen> {
     );
   }
 
+  void _showDialog(String message) {
+    showDialog(
+      context: context,
+      builder:
+          (_) => AlertDialog(
+            title: const Text("Resultado"),
+            content: Text(message),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                child: const Text("OK"),
+              ),
+            ],
+          ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -93,9 +127,7 @@ class _UsuariosScreenState extends State<UsuariosScreen> {
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(
-                  builder: (context) => const RegisterScreen(),
-                ),
+                MaterialPageRoute(builder: (context) => const RegisterScreen()),
               ).then((value) {
                 _fetchUsers();
               });
@@ -119,20 +151,19 @@ class _UsuariosScreenState extends State<UsuariosScreen> {
             ),
           ),
           Expanded(
-            child: usuariosFiltrados.isEmpty
-                ? Center(child: Text('No se encontraron usuarios'))
-                : ListView.builder(
-                    itemCount: usuariosFiltrados.length,
-                    itemBuilder: (context, index) {
-                      final usuario = usuariosFiltrados[index];
-                      return GestureDetector(
-                        onTap: () => _showUserOptionsDialog(usuario),
-                        child: MenuItemWidget(
-                          usuario: usuario,
-                        ),
-                      );
-                    },
-                  ),
+            child:
+                usuariosFiltrados.isEmpty
+                    ? Center(child: Text('No se encontraron usuarios'))
+                    : ListView.builder(
+                      itemCount: usuariosFiltrados.length,
+                      itemBuilder: (context, index) {
+                        final usuario = usuariosFiltrados[index];
+                        return GestureDetector(
+                          onTap: () => _showUserOptionsDialog(usuario),
+                          child: MenuItemWidget(usuario: usuario),
+                        );
+                      },
+                    ),
           ),
         ],
       ),

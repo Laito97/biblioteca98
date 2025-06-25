@@ -152,7 +152,7 @@ class _RegistrarPrestamoScreenState extends State<RegistrarPrestamoScreen> {
                     items: usuarios
                         .map((u) => DropdownMenuItem<Usuario>(
                               value: u,
-                              child: Text(u.persona.nombres ?? 'Usuario ${u.usuarioId}'),
+                              child: Text(u.persona?.nombres ?? 'Usuario ${u.usuarioId}'),
                             ))
                         .toList(),
                     onChanged: (val) => setState(() => usuarioSolicita = val),

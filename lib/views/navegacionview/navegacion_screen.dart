@@ -26,7 +26,7 @@ class NavegacionScreen extends StatelessWidget {
               style: TextStyle(fontSize: 11, color: Colors.white60),
             ),
             Text(
-              'Bienvenido ${usuarioLogged.persona.nombres}',
+              'Bienvenido ${usuarioLogged.persona?.nombres}',
               style: TextStyle(fontSize: 16, color: Colors.white),
             ),
           ],

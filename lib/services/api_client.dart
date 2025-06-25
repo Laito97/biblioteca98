@@ -3,11 +3,11 @@ import 'dart:convert';
 
 // ApiClient centralizado que realiza las peticiones
 class ApiClient {
- final String host = 'http://192.168.1.29:3000/api/biblioteca_v1';  // Base de la API
-//final String host = 'http://10.83.8.58:3000/api/biblioteca_v1';  // Base de la API
+  final String host =
+      'http://192.168.18.38:3000/api/biblioteca_v1'; // Base de la API
+  //final String host = 'http://10.83.8.58:3000/api/biblioteca_v1';  // Base de la API
   //final String host = 'http://10.83.9.238:3000/api/biblioteca_v1';
   //final String host = 'http://10.83.9.47:3000/api/biblioteca_v1';
-
 
   // Petición GET genérica
   Future<Map<String, dynamic>> get(String endpoint) async {
@@ -42,26 +42,25 @@ class ApiClient {
     }
   }
 
-
   Future<Map<String, dynamic>> put(
-  String endpoint,
-  Map<String, dynamic> body,
-) async {
-  final response = await http.put(
-    Uri.parse('$host$endpoint'),
-    headers: {'Content-Type': 'application/json'},
-    body: json.encode(body),
-  );
+    String endpoint,
+    Map<String, dynamic> body,
+  ) async {
+    final response = await http.put(
+      Uri.parse('$host$endpoint'),
+      headers: {'Content-Type': 'application/json'},
+      body: json.encode(body),
+    );
 
-  print('STATUS CODE: ${response.statusCode}');
-  print('BODY: ${response.body}');
+    print('STATUS CODE: ${response.statusCode}');
+    print('BODY: ${response.body}');
 
-  if (response.statusCode == 200 || response.statusCode == 201) {
-    return json.decode(response.body);
-  } else {
-    final errorBody = json.decode(response.body);
-    final errorMessage = errorBody['message'] ?? 'Error desconocido';
-    throw Exception('Failed to put data: $errorMessage');
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      return json.decode(response.body);
+    } else {
+      final errorBody = json.decode(response.body);
+      final errorMessage = errorBody['message'] ?? 'Error desconocido';
+      throw Exception('Failed to put data: $errorMessage');
+    }
   }
-}
 }

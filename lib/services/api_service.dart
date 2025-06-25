@@ -247,17 +247,15 @@ Future<Usuario> getUsuarioById(int id) async {
 }
 
 //Eliminar Usuariov2
-//obetener usuario por id
-
-Future<Usuario> DeleteUsuarioById(int id, Usuario usuario) async {
-  final data = await client.put('/usuarios/$id',usuario.toJson());  // Esto devuelve Map<String, dynamic>
+Future<Usuario> deleteUsuarioById(int? id, Usuario? usuario) async {
+  final data = await client.put('/usuarios/eliminar/$id',usuario!.toJson()); 
   
-  // Suponiendo que la respuesta tiene el usuario dentro de alguna llave, por ejemplo 'usuario'
   if (data.containsKey('usuario')) {
     return Usuario.fromJson(data['usuario']);
   } else {
     throw Exception('Usuario no encontrado');
   }
+  
 }
 
 //Guardar Autores v2

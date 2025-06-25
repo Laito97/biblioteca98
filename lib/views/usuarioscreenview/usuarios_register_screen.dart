@@ -2,8 +2,10 @@ import 'package:biblioteca97/models/persona.dart';
 import 'package:biblioteca97/models/tipo_usuario.dart';
 import 'package:biblioteca97/models/usuario.dart';
 import 'package:biblioteca97/services/api_service.dart';
+import 'package:biblioteca97/utils/usuario_provider.dart';
 import 'package:flutter/material.dart';
 import '../../services/api_client.dart';
+import 'package:provider/provider.dart';
 
 class RegisterScreen extends StatefulWidget {
   final int? usuarioId; // Parámetro opcional para editar
@@ -164,7 +166,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     prefixIcon: const Icon(Icons.lock),
                     suffixIcon: IconButton(
                       icon: Icon(
-                        isPasswordVisible ? Icons.visibility_off : Icons.visibility,
+                        isPasswordVisible
+                            ? Icons.visibility_off
+                            : Icons.visibility,
                       ),
                       onPressed: () {
                         setState(() {
@@ -177,8 +181,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       borderSide: BorderSide.none,
                     ),
                   ),
-                  validator: (value) =>
-                      value == null || value.isEmpty ? 'Campo requerido' : null,
+                  validator:
+                      (value) =>
+                          value == null || value.isEmpty
+                              ? 'Campo requerido'
+                              : null,
                 ),
                 const SizedBox(height: 10),
 
@@ -194,12 +201,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       borderSide: BorderSide.none,
                     ),
                   ),
-                  items: _tiposUsuario.map((tipo) {
-                    return DropdownMenuItem(
-                      value: tipo,
-                      child: Text(tipo.nombre ?? 'Tipo ${tipo.id}'),
-                    );
-                  }).toList(),
+                  items:
+                      _tiposUsuario.map((tipo) {
+                        return DropdownMenuItem(
+                          value: tipo,
+                          child: Text(tipo.nombre ?? 'Tipo ${tipo.id}'),
+                        );
+                      }).toList(),
                   onChanged: (TipoUsuario? value) {
                     setState(() {
                       _selectedTipoUsuario = value;
@@ -226,31 +234,56 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       ),
                     ),
                     onPressed: () async {
+                      final usuarioProvider = Provider.of<UsuarioProvider>(
+                        context,
+                        listen: false,
+                      );
+
+                      final usuarioId = usuarioProvider.usuario?.usuarioId;
+
+                      print('ID PROVIDER ${usuarioId}' );
+
                       if (_formKey.currentState!.validate()) {
                         final persona = Persona(
                           nombres: _nombresController.text,
                           apellidos: _apellidosController.text,
-                          numContacto: int.tryParse(_telefonoController.text) ?? 0,
+                          numContacto:
+                              int.tryParse(_telefonoController.text) ?? 0,
                           correo: _correoController.text,
                           dni: _dniController.text,
                           direccion: _direccionController.text,
                         );
 
-                        final tipoUsuario = _selectedTipoUsuario ?? TipoUsuario(id: 1);
-
-                        final usuario = Usuario(
-                          usuarioId: widget.usuarioId ?? 0,
-                          persona: persona,
-                          tipoUsuario: tipoUsuario,
-                          password: _passwordController.text,
-                        );
+                        final tipoUsuario =
+                            _selectedTipoUsuario ?? TipoUsuario(id: 1);
 
                         try {
                           bool exito;
                           if (_isEditing) {
-                            exito = await _apiService.actualizarUsuarioV2(usuario);
+                            final usuario = Usuario(
+                              usuarioId: widget.usuarioId ?? 0,
+                              persona: persona,
+                              tipoUsuario: tipoUsuario,
+                              password: _passwordController.text,
+                              usuario_actualizacion_id: usuarioId
+                            );
+
+                            exito = await _apiService.actualizarUsuarioV2(
+                              usuario,
+                            );
                           } else {
-                            exito = await _apiService.registrarUsuarioV2(usuario);
+
+                            final usuario = Usuario(
+                              usuarioId: widget.usuarioId ?? 0,
+                              persona: persona,
+                              tipoUsuario: tipoUsuario,
+                              password: _passwordController.text,
+                              usuario_creacion_id: usuarioId
+                            );
+
+                            exito = await _apiService.registrarUsuarioV2(
+                              usuario,
+                            );
                           }
 
                           _showDialog(
@@ -313,24 +346,25 @@ class _RegisterScreenState extends State<RegisterScreen> {
   void _showDialog(String message) {
     showDialog(
       context: context,
-      builder: (_) => AlertDialog(
-        title: const Text("Resultado"),
-        content: Text(message),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              if (message.contains("éxito")) {
-                _limpiarFormulario();
-                if (_isEditing) {
-                  Navigator.pop(context); // salir de editar y volver atrás
-                }
-              }
-            },
-            child: const Text("OK"),
+      builder:
+          (_) => AlertDialog(
+            title: const Text("Resultado"),
+            content: Text(message),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                  if (message.contains("éxito")) {
+                    _limpiarFormulario();
+                    if (_isEditing) {
+                      Navigator.pop(context); // salir de editar y volver atrás
+                    }
+                  }
+                },
+                child: const Text("OK"),
+              ),
+            ],
           ),
-        ],
-      ),
     );
   }
 

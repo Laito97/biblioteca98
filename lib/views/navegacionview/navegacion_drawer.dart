@@ -58,7 +58,7 @@ class NavegacionDrawer extends StatelessWidget {
             ),
             const SizedBox(height: 12),
             Text(
-              '${usuarioLogged.persona.nombres} ${usuarioLogged.persona.apellidos}'
+              '${usuarioLogged.persona?.nombres} ${usuarioLogged.persona?.apellidos}'
                   .toUpperCase(),
               style: const TextStyle(
                 color: Colors.white,
