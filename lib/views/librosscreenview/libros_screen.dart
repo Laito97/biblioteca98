@@ -1,10 +1,12 @@
 import 'package:biblioteca97/models/libro.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../services/api_client.dart';
 import '../../services/api_service.dart';
 import 'LibroItemWidget.dart';
 import 'package:biblioteca97/views/navegacionview/navegacion_drawer.dart';
 import 'package:biblioteca97/views/librosscreenview/registrar_libro_screen.dart';
+import 'package:biblioteca97/utils/usuario_provider.dart';
 
 class LibrosScreen extends StatefulWidget {
   const LibrosScreen({Key? key}) : super(key: key);
@@ -37,7 +39,7 @@ class _LibrosScreenState extends State<LibrosScreen> {
     try {
       listaLibros = await _apiService.listLibrosV2();
       listaFiltrada = List.from(listaLibros);
-      _filtrarLibros(); // aplicar filtro si hay texto
+      _filtrarLibros();
     } catch (e) {
       print("Error al obtener libros: $e");
     }
@@ -97,6 +99,14 @@ class _LibrosScreenState extends State<LibrosScreen> {
   }
 
   void _eliminarLibro(Libro libro) async {
+    final usuarioProvider = Provider.of<UsuarioProvider>(context, listen: false);
+    final usuarioId = usuarioProvider.usuario?.usuarioId;
+
+    if (usuarioId == null) {
+      _mostrarDialogo("No se pudo obtener el ID del usuario actual.");
+      return;
+    }
+
     final confirm = await showDialog<bool>(
       context: context,
       builder: (_) => AlertDialog(
@@ -110,15 +120,30 @@ class _LibrosScreenState extends State<LibrosScreen> {
     );
 
     if (confirm == true) {
-      final isbn = libro.isbn ?? '';
-      final success = await _apiService.deleteLibro(isbn);
-      if (success) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Libro eliminado")));
+      try {
+        await _apiService.deleteLibroById(libro.libro_id, usuarioId);
+        _mostrarDialogo("Libro eliminado con éxito");
         _fetchLibros();
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error al eliminar libro")));
+      } catch (e) {
+        _mostrarDialogo("Error al eliminar: $e");
       }
     }
+  }
+
+  void _mostrarDialogo(String mensaje) {
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text("Resultado"),
+        content: Text(mensaje),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("OK"),
+          ),
+        ],
+      ),
+    );
   }
 
   void _onAddLibro() async {
@@ -164,9 +189,9 @@ class _LibrosScreenState extends State<LibrosScreen> {
                         onTap: () => _mostrarOpcionesLibro(libro),
                         child: LibroItemWidget(
                           libro: libro,
-                          onEdit: (_) {},   // Opcional si no usas botones en el widget
-                          onDelete: (_) {}, // Opcional
-                          onPrestar: (_) {}, // Opcional
+                          onEdit: (_) {},
+                          onDelete: (_) {},
+                          onPrestar: (_) {},
                         ),
                       );
                     },

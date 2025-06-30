@@ -1,9 +1,11 @@
 import 'package:biblioteca97/models/editorial.dart';
-import 'package:biblioteca97/views/navegacionview/navegacion_drawer.dart';
+import 'package:biblioteca97/utils/usuario_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../services/api_client.dart';
 import '../../services/api_service.dart';
 import 'MenuItemWidget.dart';
+import 'package:biblioteca97/views/navegacionview/navegacion_drawer.dart';
 import 'package:biblioteca97/views/editorialesscreenview/editorial_register_screen.dart';
 
 class EditorialesScreen extends StatefulWidget {
@@ -40,7 +42,9 @@ class _EditorialesScreenState extends State<EditorialesScreen> {
 
   void _filterEditoriales(String query) {
     final resultados = listaEditoriales.where((editorial) {
-      return (editorial.editorial_nom ?? '').toLowerCase().contains(query.toLowerCase());
+      return (editorial.editorial_nom ?? '')
+          .toLowerCase()
+          .contains(query.toLowerCase());
     }).toList();
 
     setState(() {
@@ -54,23 +58,21 @@ class _EditorialesScreenState extends State<EditorialesScreen> {
       builder: (context) {
         return AlertDialog(
           title: Text('Opciones para "${editorial.editorial_nom ?? ''}"'),
+          content: const Text('Seleccione una acción:'),
           actions: [
             TextButton(
               onPressed: () {
-                Navigator.of(context).pop(); // Cierra el diálogo
-                _editarEditorial(editorial);
+                Navigator.of(context).pop();
+                _eliminarEditorial(editorial);
               },
-              child: const Text('Editar'),
+              child: const Text('Eliminar'),
             ),
             TextButton(
               onPressed: () {
-                Navigator.of(context).pop(); // Cierra el diálogo
-                // Maqueta eliminar
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Eliminar no implementado todavía')),
-                );
+                Navigator.of(context).pop();
+                _editarEditorial(editorial);
               },
-              child: const Text('Eliminar'),
+              child: const Text('Editar'),
             ),
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
@@ -87,22 +89,62 @@ class _EditorialesScreenState extends State<EditorialesScreen> {
       context,
       MaterialPageRoute(
         builder: (context) => EditorialRegisterScreen(
-          editorialEditar: editorial, // PASAMOS Editorial directo
+          editorialEditar: editorial,
         ),
       ),
     );
-    _fetchEditoriales(); // refresca tras editar
+    _fetchEditoriales();
+  }
+
+  void _eliminarEditorial(Editorial editorial) async {
+    try {
+      final usuarioId = Provider.of<UsuarioProvider>(
+        context,
+        listen: false,
+      ).usuario?.usuarioId;
+
+      if (usuarioId == null) {
+        _mostrarDialogo("No se pudo obtener el ID del usuario actual.");
+        return;
+      }
+      if (editorial.editorial_id == null) {
+        _mostrarDialogo("La editorial no tiene un ID válido.");
+        return;
+      }
+
+      await _apiService.deleteEditorialesById(editorial.editorial_id, usuarioId);
+      _mostrarDialogo("Editorial eliminada con éxito");
+      _fetchEditoriales();
+    } catch (e) {
+      _mostrarDialogo("Error al eliminar: $e");
+    }
+  }
+
+  void _mostrarDialogo(String mensaje) {
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text("Resultado"),
+        content: Text(mensaje),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("OK"),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Editoriales'),
+        title: const Text('Editoriales'),
         backgroundColor: Colors.red,
         actions: [
           IconButton(
-            icon: Icon(Icons.add),
+            icon: const Icon(Icons.add),
             onPressed: () async {
               await Navigator.push(
                 context,
@@ -110,7 +152,7 @@ class _EditorialesScreenState extends State<EditorialesScreen> {
                   builder: (context) => const EditorialRegisterScreen(),
                 ),
               );
-              _fetchEditoriales(); // refrescar tras agregar
+              _fetchEditoriales();
             },
           ),
         ],
@@ -124,14 +166,15 @@ class _EditorialesScreenState extends State<EditorialesScreen> {
               controller: searchController,
               decoration: InputDecoration(
                 labelText: 'Buscar Editorial',
-                prefixIcon: Icon(Icons.search),
-                border: OutlineInputBorder(),
+                prefixIcon: const Icon(Icons.search),
+                border:
+                    OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
               ),
             ),
           ),
           Expanded(
             child: filteredEditoriales.isEmpty
-                ? Center(child: Text('No se encontraron resultados'))
+                ? const Center(child: Text('No se encontraron resultados'))
                 : ListView.builder(
                     itemCount: filteredEditoriales.length,
                     itemBuilder: (context, index) {

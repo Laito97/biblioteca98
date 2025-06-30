@@ -258,6 +258,84 @@ Future<Usuario> deleteUsuarioById(int? id, Usuario? usuario) async {
   
 }
 
+//Eliminar AutoresV2
+Future<void> deleteAutoresById(int? id, int usuarioModificacionId) async {
+  final data = await client.put(
+    '/autores/eliminar/$id',
+    { "usuario_modificacion_id": usuarioModificacionId },
+  );
+
+  if (data['response_code'] == 200) {
+    // El backend devolvió un éxito, simplemente retornamos
+    return;
+  } else {
+    // Lanza excepción con mensaje del error
+    final msg = data['message'] ?? 'Error al eliminar autor';
+    throw Exception(msg);
+  }
+}
+
+
+//Eliminar EditorialesV2
+Future<void> deleteEditorialesById(int? id, int usuarioModificacionId) async {
+  final data = await client.put(
+    '/editoriales/eliminar/$id',
+    { "usuario_modificacion_id": usuarioModificacionId },
+  );
+
+  if (data['response_code'] == 200) {
+    // El backend devolvió un éxito, simplemente retornamos
+    return;
+  } else {
+    // Lanza excepción con mensaje del error
+    final msg = data['message'] ?? 'Error al eliminar autor';
+    throw Exception(msg);
+  }
+}
+
+//Eliminar LibrosV2
+Future<void> deleteLibroById(int? id, int usuarioModificacionId) async {
+  final data = await client.put(
+    '/libros/eliminar/$id',
+    { "usuario_modificacion_id": usuarioModificacionId },
+  );
+
+  if (data['response_code'] == 200) {
+    return;
+  } else {
+    final msg = data['message'] ?? 'Error al eliminar libro';
+    throw Exception(msg);
+  }
+}
+
+//eliminar por prestamo
+Future<bool> deletePrestamoById(int? prestamoId, int usuarioModificacionId) async {
+  if (prestamoId == null) {
+    throw Exception('El ID del préstamo no puede ser nulo');
+  }
+  
+  try {
+    final Map<String, dynamic> body = {
+      "usuario_modificacion_id": usuarioModificacionId,
+    };
+
+    final data = await client.put('/prestamos/eliminar/$prestamoId', body);
+
+    if (data != null && data['response_code'] == 200) {
+      return true;
+    } else {
+      final message = data != null ? data['message'] : 'Error desconocido al eliminar préstamo';
+      throw Exception(message);
+    }
+  } catch (e) {
+    print('Error deletePrestamoById: $e');
+    return false;
+  }
+}
+
+
+
+
 //Guardar Autores v2
    Future<bool> registrarAutorV2(Autor autor) async {
   try {
