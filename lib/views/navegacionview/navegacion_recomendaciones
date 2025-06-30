@@ -1,0 +1,113 @@
+import 'package:biblioteca97/services/api_service.dart';
+import 'package:biblioteca97/services/api_client.dart';
+import 'package:biblioteca97/utils/usuario_provider.dart';
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'libro_card.dart';
+
+
+class RecomendacionSection extends StatefulWidget {
+  final int idUsuario;
+
+  const RecomendacionSection({super.key, required this.idUsuario});
+
+  @override
+  State<RecomendacionSection> createState() => _RecomendacionSectionState();
+}
+
+class _RecomendacionSectionState extends State<RecomendacionSection> {
+  List<dynamic> recomendaciones = [];
+  bool isLoading = true;
+  String error = '';
+  
+
+  late ApiService apiService;
+
+  @override
+  void initState() {
+    super.initState();
+    apiService = ApiService(client: ApiClient());
+    obtenerRecomendaciones();
+  }
+
+Future<void> obtenerRecomendaciones() async {
+  try {
+    final recomendacionesData = await apiService.obtenerRecomendaciones(widget.idUsuario);
+    
+    // Imprime cada objeto
+    for (var libro in recomendacionesData) {
+      print('Libro: $libro');
+    }
+
+    setState(() {
+      recomendaciones = recomendacionesData;
+      isLoading = false;
+    });
+  } catch (e) {
+    setState(() {
+      error = 'Error: $e';
+      isLoading = false;
+    });
+  }
+}
+
+@override
+Widget build(BuildContext context) {
+  if (isLoading) {
+    return const Center(child: CircularProgressIndicator());
+  }
+
+  if (error.isNotEmpty) {
+    return Center(child: Text(error, style: const TextStyle(color: Colors.white)));
+  }
+
+  if (recomendaciones.isEmpty) {
+    return const Center(child: Text('No hay recomendaciones por ahora.', style: TextStyle(color: Colors.black)));
+  }
+
+return Container(
+  width: double.infinity,
+  decoration: BoxDecoration(
+    color: Colors.white,
+  ),
+  padding: const EdgeInsets.all(2.0),
+
+  child: Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        child: Text(
+        'Te recomendamos',
+        style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
+        ),
+      ),
+
+      const SizedBox(height: 12),
+      SizedBox(
+        height: 200,
+        child: ListView(
+          scrollDirection: Axis.horizontal,
+          children: recomendaciones.map((libro) {
+            final imagenUrl = libro['url_portada'] ?? 'https://via.placeholder.com/150';
+            final titulo = libro['libro_nom'] ?? 'Sin título';
+
+            return LibroCard(
+              imagenUrl: imagenUrl,
+              titulo: titulo,
+              onTap: () {
+                // Navegar al detalle si deseas
+              },
+            );
+          }).toList(),
+        ),
+      ),
+    ],
+  ),
+);
+
+
+}
+
+
+}

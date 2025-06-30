@@ -308,6 +308,24 @@ Future<void> deleteLibroById(int? id, int usuarioModificacionId) async {
   }
 }
 
+// Recomendaciones V2
+Future<List<dynamic>> obtenerRecomendaciones(int idUsuario) async {
+  try {
+    final data = await client.post('/test/recomendar', {
+      'id_usuario': idUsuario,
+    });
+
+    if (data != null && data['recomendaciones'] != null && data['recomendaciones'] is List) {
+      return data['recomendaciones'];
+    } else {
+      return [];
+    }
+  } catch (e) {
+    print("Error al obtener recomendaciones: $e");
+    rethrow;
+  }
+}
+
 //eliminar por prestamo
 Future<bool> deletePrestamoById(int? prestamoId, int usuarioModificacionId) async {
   if (prestamoId == null) {
