@@ -49,6 +49,8 @@ class _UsuariosScreenState extends State<UsuariosScreen> {
           actions: [
             TextButton(
               onPressed: () async {
+                Navigator.pop(context); // Cierra el diálogo de opciones
+
                 final usuarioProvider = Provider.of<UsuarioProvider>(
                   context,
                   listen: false,
@@ -64,6 +66,7 @@ class _UsuariosScreenState extends State<UsuariosScreen> {
 
                 if (response.usuarioId != null) {
                   _showDialog("Usuario eliminado con éxito");
+                  _fetchUsers(); // Recargar lista después de eliminar
                 } else {
                   _showDialog("Ocurrió un error");
                 }
@@ -72,16 +75,15 @@ class _UsuariosScreenState extends State<UsuariosScreen> {
             ),
             TextButton(
               onPressed: () {
-                Navigator.pop(context);
+                Navigator.pop(context); // Cierra el diálogo
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder:
-                        (context) =>
-                            RegisterScreen(usuarioId: usuario.usuarioId),
+                    builder: (context) =>
+                        RegisterScreen(usuarioId: usuario.usuarioId),
                   ),
                 ).then((value) {
-                  _fetchUsers(); // refrescar al volver
+                  _fetchUsers(); // Refresca al volver
                 });
               },
               child: Text('Editar'),
@@ -99,19 +101,18 @@ class _UsuariosScreenState extends State<UsuariosScreen> {
   void _showDialog(String message) {
     showDialog(
       context: context,
-      builder:
-          (_) => AlertDialog(
-            title: const Text("Resultado"),
-            content: Text(message),
-            actions: [
-              TextButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                },
-                child: const Text("OK"),
-              ),
-            ],
+      builder: (_) => AlertDialog(
+        title: const Text("Resultado"),
+        content: Text(message),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+            },
+            child: const Text("OK"),
           ),
+        ],
+      ),
     );
   }
 
@@ -147,23 +148,22 @@ class _UsuariosScreenState extends State<UsuariosScreen> {
                 prefixIcon: Icon(Icons.search),
                 border: OutlineInputBorder(),
               ),
-              // Puedes implementar filtrado aquí si quieres
+              // Aquí podrías implementar lógica de búsqueda si deseas
             ),
           ),
           Expanded(
-            child:
-                usuariosFiltrados.isEmpty
-                    ? Center(child: Text('No se encontraron usuarios'))
-                    : ListView.builder(
-                      itemCount: usuariosFiltrados.length,
-                      itemBuilder: (context, index) {
-                        final usuario = usuariosFiltrados[index];
-                        return GestureDetector(
-                          onTap: () => _showUserOptionsDialog(usuario),
-                          child: MenuItemWidget(usuario: usuario),
-                        );
-                      },
-                    ),
+            child: usuariosFiltrados.isEmpty
+                ? Center(child: Text('No se encontraron usuarios'))
+                : ListView.builder(
+                    itemCount: usuariosFiltrados.length,
+                    itemBuilder: (context, index) {
+                      final usuario = usuariosFiltrados[index];
+                      return GestureDetector(
+                        onTap: () => _showUserOptionsDialog(usuario),
+                        child: MenuItemWidget(usuario: usuario),
+                      );
+                    },
+                  ),
           ),
         ],
       ),

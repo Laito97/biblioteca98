@@ -3,8 +3,8 @@ class Autor {
   final String? autor_nom;
   final DateTime? fecha_actualizacion;
   final DateTime? fecha_creacion;
-  final int? usuario_actualizacion_id;
-  final int? usuario_creacion_id;
+  int? usuario_actualizacion_id;
+  int? usuario_creacion_id;
 
   Autor({
     this.autor_id,
@@ -36,10 +36,17 @@ class Autor {
     return {
       "autor_id": autor_id,
       "autor_nom": autor_nom,
-      "fecha_actualizacion": fecha_actualizacion,
-      "fecha_creacion": fecha_creacion,
+      "fecha_actualizacion": fecha_actualizacion?.toIso8601String(),
+      "fecha_creacion": fecha_creacion?.toIso8601String(),
       "usuario_actualizacion_id": usuario_actualizacion_id,
       "usuario_creacion_id": usuario_creacion_id,
+    };
+  }
+
+  // Método específico para enviar sólo el id del usuario que modifica
+  Map<String, dynamic> toJsonForDelete(int usuarioModificacionId) {
+    return {
+      "usuario_modificacion_id": usuarioModificacionId,
     };
   }
 }

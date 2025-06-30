@@ -1,5 +1,7 @@
 import 'package:biblioteca97/models/autor.dart';
+import 'package:biblioteca97/utils/usuario_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../services/api_client.dart';
 import '../../services/api_service.dart';
 import 'MenuItemWidget.dart';
@@ -57,7 +59,6 @@ class _AutoresScreenState extends State<AutoresScreen> {
     setState(() {});
   }
 
-  // Mostrar diálogo con opciones: Editar, Eliminar, Cancelar
   void _mostrarOpcionesAutor(Autor autor) {
     showDialog(
       context: context,
@@ -67,20 +68,17 @@ class _AutoresScreenState extends State<AutoresScreen> {
           actions: [
             TextButton(
               onPressed: () {
-                Navigator.of(context).pop(); // cerrar diálogo
-                _editarAutor(autor);
+                Navigator.of(context).pop();
+                _eliminarAutor(autor);
               },
-              child: const Text('Editar'),
+              child: const Text('Eliminar'),
             ),
             TextButton(
               onPressed: () {
-                Navigator.of(context).pop(); // cerrar diálogo
-                // Por ahora solo maqueta eliminar:
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Eliminar no implementado todavía')),
-                );
+                Navigator.of(context).pop();
+                _editarAutor(autor);
               },
-              child: const Text('Eliminar'),
+              child: const Text('Editar'),
             ),
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
@@ -92,7 +90,6 @@ class _AutoresScreenState extends State<AutoresScreen> {
     );
   }
 
-  // Navegar a pantalla de editar autor
   void _editarAutor(Autor autor) async {
     await Navigator.push(
       context,
@@ -102,7 +99,49 @@ class _AutoresScreenState extends State<AutoresScreen> {
         ),
       ),
     );
-    _fetchAutores(); // refrescar lista tras editar
+    _fetchAutores();
+  }
+
+  void _eliminarAutor(Autor autor) async {
+    try {
+      final usuarioProvider = Provider.of<UsuarioProvider>(
+        context,
+        listen: false,
+      );
+
+      final usuarioId = usuarioProvider.usuario?.usuarioId;
+      if (usuarioId == null) {
+        _mostrarDialogo("No se pudo obtener el ID del usuario actual.");
+        return;
+      }
+      if (autor.autor_id == null) {
+        _mostrarDialogo("El autor no tiene un ID válido.");
+        return;
+      }
+
+      await _apiService.deleteAutoresById(autor.autor_id, usuarioId);
+      _mostrarDialogo("Autor eliminado con éxito");
+      _fetchAutores();
+
+    } catch (e) {
+      _mostrarDialogo("Error al eliminar: $e");
+    }
+  }
+
+  void _mostrarDialogo(String mensaje) {
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text("Resultado"),
+        content: Text(mensaje),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("OK"),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -136,8 +175,7 @@ class _AutoresScreenState extends State<AutoresScreen> {
               decoration: InputDecoration(
                 labelText: 'Buscar Autor',
                 prefixIcon: const Icon(Icons.search),
-                border:
-                    OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
               ),
             ),
           ),

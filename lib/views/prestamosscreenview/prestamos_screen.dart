@@ -60,12 +60,37 @@ class _PrestamosScreenState extends State<PrestamosScreen> {
     });
   }
 
-  void _onDeletePrestamo(DataPrestamo prestamo) async {
+  // Aquí mostramos el diálogo cuando pulsamos el item
+  void _mostrarOpcionesPrestamo(Prestamo prestamo) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Opciones para préstamo ID ${prestamo.prestamo_id}'),
+        content: const Text('¿Qué desea hacer?'),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+              _onDeletePrestamo(prestamo);
+            },
+            child: const Text('Eliminar'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cancelar'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Función para eliminar el préstamo (usando tu DataPrestamo no es necesario, usamos Prestamo)
+  void _onDeletePrestamo(Prestamo prestamo) async {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text("Confirmar eliminación"),
-        content: Text("¿Estás seguro de eliminar el préstamo con ID '${prestamo.idPrestamo}'?"),
+        content: Text("¿Estás seguro de eliminar el préstamo con ID '${prestamo.prestamo_id}'?"),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
@@ -80,15 +105,17 @@ class _PrestamosScreenState extends State<PrestamosScreen> {
     );
 
     if (confirm == true) {
-      final success = await _apiService.deletePrestamo(prestamo.idPrestamo);
-      if (success) {
+      try {
+        // Aquí se asume que tienes el usuarioModificacionId de alguna manera
+        // Por ahora, lo pongo fijo como 1, cámbialo según corresponda
+        await _apiService.deletePrestamoById(prestamo.prestamo_id, 1);
         await _fetchPrestamos();
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Préstamo eliminado')),
         );
-      } else {
+      } catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Error al eliminar el préstamo')),
+          SnackBar(content: Text('Error al eliminar el préstamo: $e')),
         );
       }
     }
@@ -136,9 +163,12 @@ class _PrestamosScreenState extends State<PrestamosScreen> {
                               itemCount: filteredPrestamos.length,
                               itemBuilder: (context, index) {
                                 final prestamo = filteredPrestamos[index];
-                                return PrestamoItemWidget(
-                                  prestamo: prestamo,
-                                  onDelete: _onDeletePrestamo,
+                                return GestureDetector(
+                                  onTap: () => _mostrarOpcionesPrestamo(prestamo),
+                                  child: PrestamoItemWidget(
+                                    prestamo: prestamo,
+                                    onDelete: (_) {}, // Se mantiene pero no se usa aquí
+                                  ),
                                 );
                               },
                             ),
